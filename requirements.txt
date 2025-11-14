@@ -1,0 +1,41 @@
+# Core Deep Learning
+torch>=2.0.0
+torchvision>=0.15.0
+tensorboard>=2.12.0
+
+# Image Processing
+opencv-python>=4.8.0
+Pillow>=10.0.0
+scikit-image>=0.21.0
+
+# Data Science
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.11.0
+
+# Machine Learning
+scikit-learn>=1.3.0
+imbalanced-learn>=0.11.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.14.0
+
+# Stain Normalization
+staintools>=2.1.2
+
+# Geospatial (for pattern mapping)
+geopandas>=0.13.0
+folium>=0.14.0
+
+# Utilities
+tqdm>=4.65.0
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Annotation Tools (optional)
+# label-studio>=1.8.0
+
+# Experiment Tracking (optional)
+# wandb>=0.15.0
