@@ -59,8 +59,16 @@ with st.sidebar:
 
     st.markdown("---")
 
-    pass_threshold = st.slider("Pass Grade Threshold", 1, 5, 3, help="Grade III = Minimum pass")
-    confidence_threshold = st.slider("Pass Confidence", 0.5, 1.0, 0.8, 0.05)
+    st.markdown("### 📊 AMC Acceptance Criteria")
+    st.info("""
+    **Grade III ONLY** (per AMC MM-SOP-03C)
+
+    Only Grade III provides optimal color
+    contrast for accurate parasite identification.
+    """)
+
+    pass_threshold = 3  # AMC: Only Grade III is acceptable
+    confidence_threshold = st.slider("Pass Confidence", 0.5, 1.0, 0.8, 0.05, help="Minimum confidence for accepting Grade III")
     stability_window = st.number_input("Stability Window (min)", 1, 5, 2, help="Consecutive passing minutes required")
 
 # Main content
@@ -156,8 +164,9 @@ if uploaded_files:
                     grades = (torch.argmax(probs, dim=1) + 1).numpy()
                     confidences = torch.max(probs, dim=1)[0].numpy()
 
-                    # Compute pass probability
-                    pass_prob = probs[:, (pass_threshold-1):].sum(dim=1).mean().item()
+                    # Compute pass probability (AMC: Only Grade III is acceptable)
+                    # pass_threshold = 3, so index is 2 (0-indexed)
+                    pass_prob = probs[:, (pass_threshold-1)].mean().item()
 
                     minute_analyses[minute] = {
                         'minute': minute,
@@ -317,9 +326,9 @@ with st.expander("💡 Tips for Optimal Time Finding"):
     - **3% method**: Test 30-45 minutes (typical optimal: 30-35 min)
 
     **Interpretation**:
-    - **Optimal minute**: Earliest time that reliably passes
+    - **Optimal minute**: Earliest time that achieves Grade III (AMC requirement)
     - **Stability window**: Ensures consistency (2+ consecutive passing minutes)
-    - **Pass probability**: Confidence that slide meets Grade III threshold
+    - **Pass probability**: Model's confidence that slide is Grade III (not II or IV)
 
     ### Troubleshooting
 

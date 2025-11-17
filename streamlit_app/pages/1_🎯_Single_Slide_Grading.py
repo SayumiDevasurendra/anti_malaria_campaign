@@ -50,15 +50,19 @@ with st.sidebar:
 
     st.markdown("---")
 
-    st.markdown("### 📊 Grade Scale")
+    st.markdown("### 📊 AMC Grade Scale")
     st.markdown("""
-    - **Grade I**: Excellent ✅
-    - **Grade II**: Good ✅
-    - **Grade III**: Acceptable ✅
-    - **Grade IV**: Poor ❌
-    - **Grade V**: Unacceptable ❌
+    - **Grade I**: Under-stained ❌
+    - **Grade II**: Lightly stained ❌
+    - **Grade III**: Optimal staining ✅
+    - **Grade IV**: Over-stained ❌
+    - **Grade V**: Deeply over-stained ❌
 
-    **Pass Threshold**: Grade III or better
+    **Pass Threshold**: Grade III ONLY
+
+    ⚠️ **Note**: Per AMC guidelines, only Grade III
+    provides optimal color contrast for accurate
+    malaria parasite identification.
     """)
 
 # Main content
@@ -128,8 +132,8 @@ with col2:
                         grade_label = ['I', 'II', 'III', 'IV', 'V'][prediction.item()]
                         confidence_score = confidence.item()
 
-                    # Determine pass/fail
-                    is_pass = grade_numeric >= 3
+                    # Determine pass/fail (AMC: Only Grade III is acceptable)
+                    is_pass = (grade_numeric == 3)
 
                     # Display results
                     st.markdown("#### 📊 Grading Results")
@@ -153,29 +157,81 @@ with col2:
 
                     if is_pass:
                         st.success(f"✅ **Slide Passed**: Grade {grade_label} with {confidence_score:.1%} confidence")
-                        st.info("This slide is acceptable for parasite examination.")
+                        st.info("""
+                        **Grade III Characteristics** (Optimal Staining):
+                        - **Thick Smear**: Leukocyte nuclei deep purple, vague granulation in cytoplasm;
+                          eosinophilic granules well defined; parasites with clear cytoplasm and chromatin;
+                          background mottled grey with optimum color contrast
+                        - **Thin Smear**: Blue cytoplasm and red chromatin of parasites clearly differentiated;
+                          Schüffner's stippling visible in vivax-infected cells
+                        """)
                     else:
                         st.error(f"❌ **Slide Failed**: Grade {grade_label} with {confidence_score:.1%} confidence")
 
-                        # Failure diagnosis
-                        st.markdown("#### 🔍 Failure Diagnosis")
+                        # Failure diagnosis based on AMC guidelines
+                        st.markdown("#### 🔍 Failure Diagnosis (AMC Guidelines)")
 
-                        if grade_numeric < 3:
-                            st.warning("**Likely Issue**: Under-staining (too pale)")
+                        if grade_numeric == 1:
+                            st.warning("**Grade I - Under-stained (Incomplete Lysis)**")
                             st.markdown("""
+                            **Observed Issues**:
+                            - **Thick Smear**: Lysis incomplete; leukocyte nuclei and eosinophilic granules beginning to stain;
+                              malaria parasites not yet visible but pigment clearly shown; background pale
+                            - **Thin Smear**: Erythrocytes pale pink; leukocyte nuclei pale blue;
+                              leukocyte cytoplasm and parasite chromatin/cytoplasm unstained
+
+                            **Corrective Actions**:
+                            - Increase staining time by 2-3 minutes
+                            - Check Giemsa working solution concentration (should be 3% or 10%)
+                            - Verify stock Giemsa quality (perform QC check)
+                            - Check buffered water pH (should be 7.2)
+                            """)
+                        elif grade_numeric == 2:
+                            st.warning("**Grade II - Lightly Stained (Suboptimal)**")
+                            st.markdown("""
+                            **Observed Issues**:
+                            - **Thick Smear**: Lysis complete; parasites visible but color contrast not optimal;
+                              background pale
+                            - **Thin Smear**: Leukocyte granules visible; parasites just visible;
+                              insufficient color differentiation
+
                             **Corrective Actions**:
                             - Increase staining time by 1-2 minutes
-                            - Check Giemsa concentration
-                            - Verify stain is fresh
+                            - Verify Giemsa concentration is accurate
+                            - Check that methanol fixation was adequate (thin smear)
+                            - Ensure stain solution is freshly prepared
                             """)
-                        else:
-                            st.warning("**Likely Issue**: Over-staining or poor quality")
+                        elif grade_numeric == 4:
+                            st.warning("**Grade IV - Over-stained (Reduced Contrast)**")
                             st.markdown("""
+                            **Observed Issues**:
+                            - **Thick Smear**: Malaria parasites deeply stained; background blue-grey;
+                              color contrast lessened; Schüffner's dots visible
+                            - **Thin Smear**: All colors intensified; features of immature erythrocytes emphasized;
+                              may obscure parasite details
+
                             **Corrective Actions**:
                             - Decrease staining time by 1-2 minutes
-                            - Check for precipitates (filter/replace stain)
-                            - Verify buffered water pH (7.2)
-                            - Check fixation quality
+                            - Check for Giemsa precipitates (filter or replace stain)
+                            - Verify buffered water pH is exactly 7.2 (low pH causes pinkish/over-staining)
+                            - Check if working solution is too concentrated
+                            """)
+                        elif grade_numeric == 5:
+                            st.warning("**Grade V - Deeply Over-stained (Poor Contrast)**")
+                            st.markdown("""
+                            **Observed Issues**:
+                            - **Thick Smear**: All cellular elements deeply stained; background dark blue-grey;
+                              color contrast poor; difficult to identify parasites
+                            - **Thin Smear**: Plasmodium falciparum stippling (Maurer's dots) demonstrated;
+                              but excessive staining obscures morphology
+
+                            **Corrective Actions**:
+                            - Decrease staining time by 2-4 minutes
+                            - Replace Giemsa working solution (may be contaminated or too old)
+                            - Verify buffered water pH (high pH causes bluish/purple over-staining)
+                            - Check stock Giemsa quality (perform QC check per MM-SOP-03C)
+                            - Ensure proper methanol fixation (over-fixation can cause deep staining)
+                            - Filter stain to remove precipitates
                             """)
 
                     # Probability distribution
@@ -233,13 +289,20 @@ with st.expander("💡 Tips for Best Results"):
     - **Lighting**: Consistent, even illumination
     - **Field of View**: Capture representative area of slide
 
-    ### Interpretation Guidelines
+    ### AMC Grading Interpretation (Per MM-SOP-03C)
+    - **Grade III ONLY**: Acceptable quality for malaria diagnosis
+    - **Grades I-II**: Under-stained; increase staining time
+    - **Grades IV-V**: Over-stained; decrease staining time
     - **Confidence < 70%**: Results may be unreliable, consider re-imaging
-    - **Grade III**: Minimum acceptable quality for diagnosis
-    - **Failed Slides**: Follow corrective actions before re-staining
+
+    ### Macroscopic Quality Checks
+    - **Pinkish/Red Film**: Low pH or over-staining (Grades IV-V)
+    - **Bluish/Purple Film**: High pH or under-staining (Grades I-II)
+    - **Mottled Grey Film**: Optimal staining (Grade III)
 
     ### Common Issues
     - **Low Confidence**: Check image quality (focus, lighting)
-    - **Consistent Failures**: Check staining protocol and reagents
-    - **Variable Grades**: Ensure consistent imaging conditions
+    - **Consistent Failures**: Perform QC on Giemsa stock and buffered water (pH 7.2)
+    - **Variable Grades**: Standardize staining time based on QC results
+    - **Precipitates**: Filter Giemsa working solution before use
     """)

@@ -162,16 +162,28 @@ with st.expander("📖 How to Use This System", expanded=False):
 # AMC Grade Scale Reference
 st.markdown("## 📚 AMC Grade Scale Reference")
 
+st.warning("""
+⚠️ **Important**: Per AMC MM-SOP-03C guidelines, **only Grade III is acceptable** for malaria diagnosis.
+All other grades indicate staining issues requiring corrective action.
+""")
+
 grade_data = {
     "Grade": ["I", "II", "III", "IV", "V"],
-    "Quality": ["Excellent", "Good", "Acceptable", "Poor", "Unacceptable"],
-    "Status": ["✅ Pass", "✅ Pass", "✅ Pass (Minimum)", "❌ Fail", "❌ Fail"],
-    "Description": [
-        "Optimal staining, clear contrast",
-        "Good staining, acceptable contrast",
-        "Minimum passing grade",
-        "Suboptimal staining",
-        "Unusable slide"
+    "Classification": ["Under-stained", "Lightly stained", "Optimal staining", "Over-stained", "Deeply over-stained"],
+    "Status": ["❌ Fail", "❌ Fail", "✅ Pass", "❌ Fail", "❌ Fail"],
+    "Key Characteristics": [
+        "Lysis incomplete; parasites not visible; background pale",
+        "Lysis complete; parasites visible but contrast not optimal",
+        "Optimal color contrast; parasites clearly defined; background mottled grey",
+        "Deeply stained; background blue-grey; contrast lessened",
+        "All elements deeply stained; dark blue-grey background; poor contrast"
+    ],
+    "Corrective Action": [
+        "Increase staining time 2-3 min",
+        "Increase staining time 1-2 min",
+        "No action needed - optimal",
+        "Decrease staining time 1-2 min",
+        "Decrease staining time 2-4 min; check pH & QC"
     ]
 }
 
