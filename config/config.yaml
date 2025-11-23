@@ -30,11 +30,11 @@ data:
     - "thin"
     - "thick"
 
-  # AMC Grade scale
+  # AMC Grade scale (per MM-SOP-03C)
   grades:
     labels: ["I", "II", "III", "IV", "V"]
     numeric: [1, 2, 3, 4, 5]
-    pass_threshold: 3  # Grade III is minimum acceptable
+    pass_threshold: 3  # AMC: ONLY Grade III is acceptable (not >= III)
 
   # Reason codes for failures
   failure_reasons:
@@ -152,7 +152,7 @@ evaluation:
 
 # Optimal Time Selection
 optimal_time:
-  # Confidence threshold for "pass" (Grade >= 3)
+  # Confidence threshold for "pass" (AMC: ONLY Grade == 3)
   pass_confidence_threshold: 0.8
 
   # Minimum stability window (consecutive acceptable minutes)

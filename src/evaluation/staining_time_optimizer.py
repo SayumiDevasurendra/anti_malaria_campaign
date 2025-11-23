@@ -25,7 +25,7 @@ class StainingTimeOptimizer:
         self,
         model: nn.Module,
         device: str = 'cuda',
-        pass_threshold: int = 3,  # Grade III is minimum pass
+        pass_threshold: int = 3,  # AMC: ONLY Grade III is acceptable (not >= III)
         confidence_threshold: float = 0.8,
         stability_window: int = 2  # Consecutive acceptable minutes
     ):
@@ -35,14 +35,14 @@ class StainingTimeOptimizer:
         Args:
             model: Trained grade classification model
             device: Device ('cuda' or 'cpu')
-            pass_threshold: Minimum acceptable grade (1-5)
+            pass_threshold: ONLY this exact grade is acceptable (AMC: Grade III only)
             confidence_threshold: Minimum confidence for pass prediction
             stability_window: Number of consecutive acceptable minutes
         """
         self.model = model.to(device)
         self.model.eval()
         self.device = device
-        self.pass_threshold = pass_threshold  # Grade III = 3
+        self.pass_threshold = pass_threshold  # AMC: ONLY Grade III = 3 (not >= 3)
         self.confidence_threshold = confidence_threshold
         self.stability_window = stability_window
 
@@ -75,18 +75,18 @@ class StainingTimeOptimizer:
 
     def compute_pass_probability(self, probs: np.ndarray) -> float:
         """
-        Compute probability of passing (Grade >= pass_threshold)
+        Compute probability of passing (ONLY Grade == pass_threshold, per AMC)
 
         Args:
             probs: Probability distribution over grades (num_samples, num_classes)
 
         Returns:
-            Probability of passing
+            Probability of achieving the exact passing grade (AMC: Grade III only)
         """
-        # Sum probabilities for grades >= threshold
-        # Grades are 0-indexed, so pass_threshold=3 means index>=2
+        # AMC: ONLY Grade III is acceptable (not >= III)
+        # Grades are 0-indexed, so pass_threshold=3 means index=2
         pass_idx = self.pass_threshold - 1
-        pass_prob = probs[:, pass_idx:].sum(axis=1).mean()
+        pass_prob = probs[:, pass_idx].mean()  # Only this specific grade, not >= threshold
 
         return pass_prob
 
@@ -194,13 +194,13 @@ class StainingTimeOptimizer:
 
     def explain_failure(self, analysis: Dict) -> Dict:
         """
-        Provide SOP-worded explanation for failing slides
+        Provide AMC MM-SOP-03C compliant explanation for failing slides
 
         Args:
             analysis: Analysis results for a failing slide
 
         Returns:
-            Explanation with reason codes and quick fixes
+            Explanation with reason codes and quick fixes per AMC guidelines
         """
         mean_grade = analysis['mean_grade']
         pass_prob = analysis['pass_probability']
@@ -208,28 +208,62 @@ class StainingTimeOptimizer:
         reasons = []
         fixes = []
 
-        # Under-staining
-        if mean_grade < self.pass_threshold and pass_prob < 0.5:
-            reasons.append("under_stain")
-            fixes.append("Increase staining time by 1-2 minutes")
+        # AMC: Only Grade III is acceptable
+        # Grades I-II: Under-staining
+        if mean_grade < self.pass_threshold:
+            grade_round = round(mean_grade)
+            if grade_round <= 1:
+                reasons.append("grade_i_under_stain")
+                fixes.extend([
+                    "Increase staining time by 2-3 minutes",
+                    "Check Giemsa working solution concentration (should be 3% or 10%)",
+                    "Verify stock Giemsa quality (perform QC check)",
+                    "Check buffered water pH (should be 7.2)"
+                ])
+            else:  # Grade II
+                reasons.append("grade_ii_light_stain")
+                fixes.extend([
+                    "Increase staining time by 1-2 minutes",
+                    "Verify Giemsa concentration is accurate",
+                    "Check that methanol fixation was adequate (thin smear)",
+                    "Ensure stain solution is freshly prepared"
+                ])
 
-        # Over-staining
-        elif mean_grade > self.pass_threshold and pass_prob < self.confidence_threshold:
-            reasons.append("over_stain")
-            fixes.append("Reduce staining time by 1-2 minutes")
+        # Grades IV-V: Over-staining
+        elif mean_grade > self.pass_threshold:
+            grade_round = round(mean_grade)
+            if grade_round >= 5:
+                reasons.append("grade_v_deep_over_stain")
+                fixes.extend([
+                    "Decrease staining time by 2-4 minutes",
+                    "Replace Giemsa working solution (may be contaminated or too old)",
+                    "Verify buffered water pH (high pH causes bluish/purple over-staining)",
+                    "Check stock Giemsa quality (perform QC check per MM-SOP-03C)",
+                    "Ensure proper methanol fixation (over-fixation can cause deep staining)",
+                    "Filter stain to remove precipitates"
+                ])
+            else:  # Grade IV
+                reasons.append("grade_iv_over_stain")
+                fixes.extend([
+                    "Decrease staining time by 1-2 minutes",
+                    "Check for Giemsa precipitates (filter or replace stain)",
+                    "Verify buffered water pH is exactly 7.2 (low pH causes pinkish/over-staining)",
+                    "Check if working solution is too concentrated"
+                ])
 
         # Low confidence (could be multiple issues)
         if analysis['mean_confidence'] < 0.6:
-            reasons.extend(["ph_rinse_issue", "precipitates"])
+            reasons.append("low_confidence")
             fixes.extend([
-                "Check buffered water pH (should be 7.2)",
+                "Check image quality and focus",
+                "Verify buffered water pH (should be 7.2)",
                 "Filter or replace Giemsa stain if precipitates visible"
             ])
 
         # High variance in grades
         if analysis['std_grade'] > 1.0:
-            reasons.append("background_artefacts")
-            fixes.append("Check slide fixation and background clarity")
+            reasons.append("high_variance")
+            fixes.append("Check slide fixation and staining uniformity")
 
         explanation = {
             'minute': analysis['minute'],
@@ -244,14 +278,16 @@ class StainingTimeOptimizer:
         return explanation
 
     def _format_sop_explanation(self, reason_codes: List[str]) -> str:
-        """Format reason codes into SOP language"""
+        """Format reason codes into AMC MM-SOP-03C compliant language"""
         explanations = {
-            'under_stain': "Slide appears under-stained (too pale)",
-            'over_stain': "Slide appears over-stained (too dark)",
+            'grade_i_under_stain': "Grade I - Under-stained (incomplete lysis, parasites not visible)",
+            'grade_ii_light_stain': "Grade II - Lightly stained (suboptimal color contrast)",
+            'grade_iv_over_stain': "Grade IV - Over-stained (reduced color contrast, background blue-grey)",
+            'grade_v_deep_over_stain': "Grade V - Deeply over-stained (poor contrast, dark blue-grey background)",
+            'low_confidence': "Low model confidence (possible image quality or preparation issues)",
+            'high_variance': "High grade variance (inconsistent staining across slide)",
             'precipitates': "Possible dye precipitates detected",
-            'ph_rinse_issue': "Possible pH or rinse issue (check buffered water)",
-            'fixation_problem': "Possible fixation issue",
-            'background_artefacts': "Background artefacts or inconsistency detected"
+            'ph_rinse_issue': "Possible pH or rinse issue (check buffered water at pH 7.2)"
         }
 
         return "; ".join([explanations.get(code, code) for code in reason_codes])
