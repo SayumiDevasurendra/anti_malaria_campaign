@@ -20,15 +20,19 @@ class StainTimeDatasetOrganizer:
 
     # Filename patterns to extract metadata
     PATTERNS = [
-        # Pattern 1: dilution_time_grade_smear.ext
+        # Pattern 1: dilution_batchN_time_grade_smear.ext (with batch number)
+        # Example: 10%_batch1_8min_3_thin.jpg
+        r'(?P<dilution>\d+%)_batch(?P<batch>\d+)_(?P<time>\d+)min_(?P<grade>[IV]+|[1-5])_(?P<smear>thin|thick)',
+
+        # Pattern 2: dilution_time_grade_smear.ext (without batch)
         # Example: 10%_8min_III_thin.jpg
         r'(?P<dilution>\d+%)_(?P<time>\d+)min_(?P<grade>[IV]+|[1-5])_(?P<smear>thin|thick)',
 
-        # Pattern 2: dilution_time_grade.ext
+        # Pattern 3: dilution_time_grade.ext
         # Example: 3%_35min_IV.jpg
         r'(?P<dilution>\d+%)_(?P<time>\d+)min_(?P<grade>[IV]+|[1-5])',
 
-        # Pattern 3: More flexible with separators
+        # Pattern 4: More flexible with separators
         # Example: 10pct-8-III-thin.jpg
         r'(?P<dilution>\d+)(?:pct|%)[-_](?P<time>\d+)[-_](?P<grade>[IV]+|[1-5])[-_]?(?P<smear>thin|thick)?',
     ]
