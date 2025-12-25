@@ -41,6 +41,8 @@ data/data_04/raw/*
 !data/data_04/raw/.gitkeep
 data/data_04/processed/*
 !data/data_04/processed/.gitkeep
+data/data_04/splits/*
+!data/data_04/splits/.gitkeep
 data/data_04/annotations/*
 !data/data_04/annotations/.gitkeep
 data/data_04/unlabeled/*

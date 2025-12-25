@@ -5,7 +5,8 @@ Scans the organized dataset and creates a metadata CSV file
 with all image information for training.
 
 Usage:
-    python create_metadata.py --data_dir data/processed --output data/metadata.csv
+    python scripts/create_metadata.py
+    python scripts/create_metadata.py --data_dir data/data_04/processed --output data/data_04/splits/metadata.csv
 
 @author: Sayumi Devasurendra
 @version: 0.1.0
@@ -141,13 +142,13 @@ def main():
     parser.add_argument(
         '--data_dir',
         type=str,
-        required=True,
+        default='data/data_04/processed',
         help='Directory containing organized images'
     )
     parser.add_argument(
         '--output',
         type=str,
-        required=True,
+        default='data/data_04/splits/metadata.csv',
         help='Output CSV path'
     )
 

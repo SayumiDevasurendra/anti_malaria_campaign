@@ -10,6 +10,7 @@ project:
 data:
   raw_dir: "data/data_04/raw"
   processed_dir: "data/data_04/processed"
+  splits_dir: "data/data_04/splits"
   annotations_dir: "data/data_04/annotations"
 
   # Image specifications

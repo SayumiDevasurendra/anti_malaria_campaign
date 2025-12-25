@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 
 # Configuration
 DATA_DIR = Path("data/data_04/processed")
-OUTPUT_DIR = Path("data/data_04/processed")
+OUTPUT_DIR = Path("data/data_04/splits")
 TRAIN_RATIO = 0.7
 VAL_RATIO = 0.15
 TEST_RATIO = 0.15

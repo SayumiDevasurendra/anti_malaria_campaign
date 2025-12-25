@@ -224,13 +224,14 @@ def main():
             random_state=random_seed
         )
 
-        # Save splits
-        output_dir = Path(args.output_dir)
-        train_df.to_csv(output_dir / 'train.csv', index=False)
-        val_df.to_csv(output_dir / 'val.csv', index=False)
-        test_df.to_csv(output_dir / 'test.csv', index=False)
+        # Save splits to splits folder
+        splits_dir = Path(args.output_dir).parent / 'splits'
+        splits_dir.mkdir(parents=True, exist_ok=True)
+        train_df.to_csv(splits_dir / 'train.csv', index=False)
+        val_df.to_csv(splits_dir / 'val.csv', index=False)
+        test_df.to_csv(splits_dir / 'test.csv', index=False)
 
-        print(f"\n✓ Saved splits to {output_dir}/")
+        print(f"\n✓ Saved splits to {splits_dir}/")
 
     except Exception as e:
         logger.error(f"Failed to create splits: {e}")
@@ -245,7 +246,7 @@ def main():
     print("\n1. Review your data:")
     print(f"   - Metadata: {output_csv}")
     print(f"   - Visualizations: results/results_04/figures/")
-    print(f"   - Splits: {args.output_dir}/train.csv, val.csv, test.csv")
+    print(f"   - Splits: {splits_dir}/train.csv, val.csv, test.csv")
 
     print("\n2. Train the slide grading model:")
     print("   python train_slide_grading.py --config config/config.yaml")

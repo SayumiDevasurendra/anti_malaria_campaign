@@ -13,8 +13,8 @@ anti_malaria_campaign/
 ├── data/                         # Dataset directory
 │   └── data_04/                  # Student data folder (_04 suffix)
 │       ├── raw/                  # Raw unprocessed images
-│       ├── processed/            # Organized & renamed images
-│       │   ├── *.jpg            # Slide images
+│       ├── processed/            # Organized & renamed images (*.jpg)
+│       ├── splits/               # CSV files for train/val/test
 │       │   ├── metadata.csv     # All images metadata
 │       │   ├── train.csv        # Training split
 │       │   ├── val.csv          # Validation split

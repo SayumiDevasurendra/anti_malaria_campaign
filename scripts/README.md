@@ -53,6 +53,10 @@ python scripts/setup_stain_time_data.py --data_dir data/data_04/raw --output_dir
 ```bash
 python scripts/create_metadata.py
 ```
+**What it does:**
+- Scans processed images
+- Extracts metadata from filenames
+- Saves to `data/data_04/splits/metadata.csv`
 
 ---
 

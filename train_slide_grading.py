@@ -64,10 +64,10 @@ def main():
 
     # Load data
     logger.info("\nLoading datasets...")
-    processed_dir = Path(config.get('data.processed_dir', 'data/data_04/processed'))
+    splits_dir = Path(config.get('data.splits_dir', 'data/data_04/splits'))
 
-    train_df = pd.read_csv(processed_dir / 'train.csv')
-    val_df = pd.read_csv(processed_dir / 'val.csv')
+    train_df = pd.read_csv(splits_dir / 'train.csv')
+    val_df = pd.read_csv(splits_dir / 'val.csv')
 
     logger.info(f"Train samples: {len(train_df)}")
     logger.info(f"Val samples: {len(val_df)}")
