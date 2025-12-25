@@ -9,7 +9,7 @@ Pillow>=10.0.0
 scikit-image>=0.21.0
 
 # Data Science
-numpy>=1.24.0
+numpy>=1.24.0,<2.0.0
 pandas>=2.0.0
 scipy>=1.11.0
 

@@ -6,7 +6,7 @@ Supports multiple architectures, mixed precision training, and checkpoint manage
 
 Usage:
     python train_slide_grading.py --config config/config.yaml
-    python train_slide_grading.py --config config/config.yaml --resume checkpoints/checkpoint_epoch_10.pth
+    python train_slide_grading.py --config config/config.yaml --resume checkpoints/checkpoints_04/checkpoint_epoch_10.pth
 """
 
 import argparse
@@ -41,7 +41,7 @@ def main():
     config = StainTimeConfig(args.config)
     logger = setup_stain_time_logger(
         name='SlideGrading_Train',
-        log_dir=config.get('logging.log_dir', 'logs'),
+        log_dir=config.get('logging.log_dir', 'logs/logs_04'),
         level=config.get('logging.level', 'INFO')
     )
 
@@ -64,7 +64,7 @@ def main():
 
     # Load data
     logger.info("\nLoading datasets...")
-    processed_dir = Path(config.get('data.processed_dir', 'data/processed'))
+    processed_dir = Path(config.get('data.processed_dir', 'data/data_04/processed'))
 
     train_df = pd.read_csv(processed_dir / 'train.csv')
     val_df = pd.read_csv(processed_dir / 'val.csv')
@@ -183,7 +183,7 @@ def main():
         scheduler=scheduler,
         device=device,
         use_amp=config.get('training.use_amp', True),
-        save_dir=config.get('model.checkpoint_dir', 'checkpoints'),
+        save_dir=config.get('model.checkpoint_dir', 'checkpoints/checkpoints_04'),
         logger=logger.info
     )
 

@@ -41,7 +41,7 @@ MODEL_CACHE = {}
 TRANSFORM = get_stain_time_val_transforms((512, 512))
 
 
-def load_model(model_path: str = "checkpoints/best_model.pth"):
+def load_model(model_path: str = "checkpoints_04/best_model.pth"):
     """Load and cache the model"""
     if model_path not in MODEL_CACHE:
         model = create_slide_grade_model(architecture='resnet18', num_grade_classes=5)

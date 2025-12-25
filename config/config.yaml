@@ -8,9 +8,9 @@ project:
 
 # Data Configuration
 data:
-  raw_dir: "data/raw"
-  processed_dir: "data/processed"
-  annotations_dir: "data/annotations"
+  raw_dir: "data/data_04/raw"
+  processed_dir: "data/data_04/processed"
+  annotations_dir: "data/data_04/annotations"
 
   # Image specifications
   image_size: [512, 512]  # Target size for model input
@@ -67,8 +67,8 @@ model:
   dropout: 0.3
 
   # Model paths
-  save_dir: "models"
-  checkpoint_dir: "checkpoints"
+  save_dir: "models/models_04"
+  checkpoint_dir: "checkpoints/checkpoints_04"
 
 # Training Configuration
 training:
@@ -172,8 +172,8 @@ geospatial:
 # Logging
 logging:
   level: "INFO"  # DEBUG, INFO, WARNING, ERROR
-  log_dir: "logs"
-  tensorboard_dir: "runs"
+  log_dir: "logs/logs_04"
+  tensorboard_dir: "runs/runs_04"
   console_output: true
   file_output: true
 

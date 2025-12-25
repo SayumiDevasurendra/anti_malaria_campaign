@@ -32,7 +32,7 @@ class SlideGradeTrainer:
         scheduler: Optional[optim.lr_scheduler._LRScheduler] = None,
         device: str = 'cuda',
         use_amp: bool = True,
-        save_dir: str = 'checkpoints',
+        save_dir: str = 'checkpoints/checkpoints_04',
         logger: Optional[Callable] = None
     ):
         """

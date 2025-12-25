@@ -16,7 +16,7 @@ from typing import Optional
 
 def setup_stain_time_logger(
     name: str = "AMC",
-    log_dir: str = "logs",
+    log_dir: str = "logs/logs_04",
     level: str = "INFO",
     console_output: bool = True,
     file_output: bool = True

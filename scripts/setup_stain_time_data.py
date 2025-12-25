@@ -11,7 +11,7 @@ Organizes Giemsa-stained slide images for stain time optimization:
 @version: 0.1.0
 
 Usage:
-    python setup_stain_time_data.py --data_dir "data/raw"
+    python setup_stain_time_data.py --data_dir "data/data_04/raw"
 """
 
 import argparse
@@ -24,12 +24,12 @@ import seaborn as sns
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / 'src'))
 
-from data.stain_time_dataset_organizer import StainTimeDatasetOrganizer
+from data.stain_time_dataset_organizer import StainTimeDatasetLoader as StainTimeDatasetOrganizer
 from utils.stain_time_config import StainTimeConfig
 from utils.stain_time_logger import setup_stain_time_logger
 
 
-def visualize_dataset(df: pd.DataFrame, output_dir: str = 'results/figures'):
+def visualize_dataset(df: pd.DataFrame, output_dir: str = 'results/results_04/figures'):
     """Create visualizations of dataset statistics"""
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -105,7 +105,7 @@ def visualize_dataset(df: pd.DataFrame, output_dir: str = 'results/figures'):
     plt.close()
 
 
-def print_statistics(organizer: DatasetOrganizer, df: pd.DataFrame):
+def print_statistics(organizer: StainTimeDatasetOrganizer, df: pd.DataFrame):
     """Print detailed dataset statistics"""
     stats = organizer.get_dataset_statistics(df)
 
@@ -136,16 +136,16 @@ def print_statistics(organizer: DatasetOrganizer, df: pd.DataFrame):
 
 def main():
     parser = argparse.ArgumentParser(description='AMC Malaria Slide Quality Grading - Starter Script')
-    parser.add_argument('--data_dir', type=str, default='data/raw',
+    parser.add_argument('--data_dir', type=str, default='data/data_04/raw',
                         help='Directory containing slide images')
-    parser.add_argument('--output_dir', type=str, default='data/processed',
+    parser.add_argument('--output_dir', type=str, default='data/data_04/processed',
                         help='Directory for processed metadata')
     parser.add_argument('--config', type=str, default='config/config.yaml',
                         help='Path to configuration file')
     args = parser.parse_args()
 
     # Setup logger
-    logger = setup_stain_time_logger(name='SlideQuality_Setup', log_dir='logs')
+    logger = setup_stain_time_logger(name='SlideQuality_Setup', log_dir='logs/logs_04')
     logger.info("Starting slide quality grading dataset setup...")
 
     # Load configuration
@@ -197,7 +197,7 @@ def main():
     # Step 3: Create visualizations
     print("\n[Step 3/5] Creating visualizations...")
     try:
-        visualize_dataset(df, output_dir='results/figures')
+        visualize_dataset(df, output_dir='results/results_04/figures')
     except Exception as e:
         logger.warning(f"Visualization failed: {e}")
         print(f"⚠ Warning: Could not create visualizations: {e}")
@@ -244,7 +244,7 @@ def main():
 
     print("\n1. Review your data:")
     print(f"   - Metadata: {output_csv}")
-    print(f"   - Visualizations: results/figures/")
+    print(f"   - Visualizations: results/results_04/figures/")
     print(f"   - Splits: {args.output_dir}/train.csv, val.csv, test.csv")
 
     print("\n2. Train the slide grading model:")

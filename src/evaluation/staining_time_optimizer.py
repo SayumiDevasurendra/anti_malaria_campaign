@@ -296,7 +296,7 @@ class StainingTimeOptimizer:
 class BatchOptimalTimeTracker:
     """Track optimal minutes across batches and sites"""
 
-    def __init__(self, storage_path: str = 'data/optimal_times.csv'):
+    def __init__(self, storage_path: str = 'data/data_04/optimal_times.csv'):
         """
         Initialize tracker
 
