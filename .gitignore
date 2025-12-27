@@ -46,6 +46,7 @@ data/data_04/splits/*
 data/data_04/annotations/*
 !data/data_04/annotations/.gitkeep
 data/data_04/unlabeled/*
+!data/data_04/unlabeled/.gitkeep
 
 # Models & Checkpoints
 models/models_04/*.pth
@@ -79,4 +80,5 @@ runs/runs_04/
 wandb/
 
 #documents
-docs/
+docs/*
+!docs/.gitkeep
