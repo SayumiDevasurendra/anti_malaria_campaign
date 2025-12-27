@@ -1,5 +1,11 @@
 """
-Simple script to create metadata CSV and train/val/test splits from processed images
+Script to create metadata CSV and train/val/test splits from processed images
+
+Usage:
+    python scripts/create_splits.py
+
+@author: Sayumi Devasurendra
+@version: 0.1.0
 """
 import os
 import re

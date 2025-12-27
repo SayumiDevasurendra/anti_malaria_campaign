@@ -1,0 +1,13 @@
+,Value
+Total Images,467
+Train Images,326
+Validation Images,70
+Test Images,71
+Dilutions,"10%, 3%"
+Grades,"2, 3, 4, 5"
+Smear Types,"thick, thin"
+Batches,9
+Time Points,33
+Smear Balance Ratio,0.98
+Grade Balance Ratio,0.43
+Complete Pairs,194/273 (71.1%)

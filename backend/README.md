@@ -99,7 +99,7 @@ Response:
 ## Model Integration
 
 The backend expects:
-- PyTorch model checkpoint at `checkpoints/best_model.pth`
+- PyTorch model checkpoint at `checkpoints/checkpoints_04/best_model.pth`
 - Model architecture: ResNet18 with 5 grade classes
 - Input image size: 512x512
 

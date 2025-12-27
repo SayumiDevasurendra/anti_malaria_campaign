@@ -26,11 +26,11 @@ anti_malaria_campaign/
 │   ├── README.md                # Scripts documentation
 │   ├── organize_dataset.py      # Standardize raw images
 │   ├── create_splits.py         # Create train/val/test splits
-│   ├── setup_stain_time_data.py # Legacy setup script
 │   └── create_metadata.py       # Generate metadata CSV
 │
 ├── notebooks/                    # Jupyter notebooks for analysis
-│   └── data_analysis_report.ipynb  # Comprehensive data report
+│   ├── comprehensive_data_analysis.ipynb  # Comprehensive data report
+│   └── results/                 # Notebook outputs and figures
 │
 ├── src/                         # Source code (ML models & utilities)
 │   ├── data/                    # Data loading & preprocessing
@@ -100,7 +100,7 @@ anti_malaria_campaign/
    ```
 
 4. **Analyze dataset:**
-   - Open `notebooks/data_analysis_report.ipynb` in Jupyter
+   - Open `notebooks/comprehensive_data_analysis.ipynb` in Jupyter
 
 ### Important Folders:
 

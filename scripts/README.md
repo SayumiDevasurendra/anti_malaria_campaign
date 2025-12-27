@@ -32,22 +32,7 @@ python scripts/create_splits.py
 
 ---
 
-### 3. `setup_stain_time_data.py`
-**Purpose:** Complete data setup with visualization (legacy script)
-**Usage:**
-```bash
-python scripts/setup_stain_time_data.py --data_dir data/data_04/raw --output_dir data/data_04/processed
-```
-**What it does:**
-- Similar to create_splits.py but with more features
-- Generates visualizations and statistics
-- Creates splits with detailed reporting
-
-**Note:** Use `create_splits.py` for simpler, faster setup.
-
----
-
-### 4. `create_metadata.py`
+### 3. `create_metadata.py`
 **Purpose:** Generate metadata CSV from organized images
 **Usage:**
 ```bash
@@ -72,8 +57,8 @@ python scripts/create_metadata.py
    python scripts/create_splits.py
    ```
 
-3. **Analyze data (optional):**
-   Open and run `notebooks/data_analysis_report.ipynb`
+3. **Deep analysis (optional):**
+   Open and run `notebooks/comprehensive_data_analysis.ipynb`
 
 4. **Train model:**
    ```bash
