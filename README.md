@@ -37,6 +37,17 @@ This is one component of the larger AMC malaria detection system. Other team mem
 
 ---
 
+## Documentation
+
+Comprehensive documentation for model training and class imbalance handling:
+
+- **[Quick Start Guide](docs/QUICK_START.md)** - Get started with balanced training in 3 steps
+- **[Balanced Training Guide](docs/BALANCED_TRAINING_GUIDE.md)** - Complete guide for handling class imbalance
+- **[Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)** - Overview of the balanced training implementation
+- **[Architecture Overview](docs/ARCHITECTURE.md)** - Hybrid balancing architecture details
+
+---
+
 **Component:** Stain Time Optimization
 **Author:** Sayumi Devasurendra
 **Version:** 0.1.0

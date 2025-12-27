@@ -15,7 +15,7 @@ import numpy as np
 import cv2
 
 
-class StainTimeGiemseAugmentation:
+class GiemseStainAugmentation:
     """Conservative augmentation for Giemsa-stained slides"""
 
     def __init__(
@@ -185,3 +185,60 @@ class StainTimeNormalization:
         except Exception as e:
             print(f"Warning: Stain normalization failed: {e}. Returning original image.")
             return image
+
+
+def get_aggressive_augmentation_transforms(image_size: Tuple[int, int] = (512, 512), config: Optional[dict] = None):
+    """
+    Get aggressive augmentation transforms for minority classes
+
+    More aggressive than standard training augmentation to increase
+    diversity in underrepresented classes.
+
+    Args:
+        image_size: Target image size (H, W)
+        config: Base augmentation configuration (will be amplified)
+
+    Returns:
+        Composed transforms
+    """
+    if config is None:
+        config = {}
+
+    # Amplify augmentation parameters (1.5x - 2x stronger)
+    transforms_list = [
+        T.Resize(image_size),
+        T.RandomRotation(degrees=config.get('random_rotation', 15) * 2),  # More rotation
+        T.RandomHorizontalFlip(p=0.5),
+        T.RandomVerticalFlip(p=0.5),
+        T.RandomAffine(
+            degrees=0,
+            translate=(0.1, 0.1),  # Add translation
+            scale=(0.9, 1.1),      # Add scaling
+            shear=10               # Add shearing
+        ),
+    ]
+
+    # Random crop and resize (adds more variation)
+    transforms_list.append(T.RandomResizedCrop(size=image_size, scale=(0.8, 1.0)))
+
+    # Stronger color jittering (but still conservative for medical images)
+    transforms_list.append(
+        GiemseStainAugmentation(
+            brightness=min(config.get('brightness_jitter', 0.1) * 1.5, 0.2),
+            contrast=min(config.get('contrast_jitter', 0.1) * 1.5, 0.2),
+            saturation=min(config.get('saturation_jitter', 0.05) * 1.5, 0.1),
+            hue=min(config.get('hue_jitter', 0.02) * 1.5, 0.05)
+        )
+    )
+
+    # Higher probability gaussian blur
+    transforms_list.append(T.RandomApply([T.GaussianBlur(kernel_size=3)], p=0.2))
+
+    # Random erasing (cutout) - helps with overfitting
+    transforms_list.extend([
+        T.ToTensor(),
+        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        T.RandomErasing(p=0.2, scale=(0.02, 0.1), ratio=(0.3, 3.3))
+    ])
+
+    return T.Compose(transforms_list)

@@ -77,3 +77,6 @@ runs/runs_04/
 
 # Weights & Biases
 wandb/
+
+#documents
+docs/
