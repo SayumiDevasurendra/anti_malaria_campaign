@@ -12,7 +12,7 @@ export default function PatternViewerPage() {
       median: 8.0,
       min: 6,
       max: 12,
-      num_batches: 45,
+      num_records: 45,
       num_sites: 8
     },
     '3%': {
@@ -21,7 +21,7 @@ export default function PatternViewerPage() {
       median: 32.0,
       min: 28,
       max: 40,
-      num_batches: 38,
+      num_records: 38,
       num_sites: 7
     }
   }
@@ -68,7 +68,7 @@ export default function PatternViewerPage() {
                 Recommended Starting Time: {nationalData['10%'].median} minutes
               </p>
               <p className="text-sm text-blue-800">
-                Based on {nationalData['10%'].num_batches} batches from {nationalData['10%'].num_sites} sites.
+                Based on {nationalData['10%'].num_records} records from {nationalData['10%'].num_sites} sites.
               </p>
               <p className="text-sm text-blue-800">
                 <strong>Range:</strong> {nationalData['10%'].min}-{nationalData['10%'].max} minutes
@@ -100,7 +100,7 @@ export default function PatternViewerPage() {
                 Recommended Starting Time: {nationalData['3%'].median} minutes
               </p>
               <p className="text-sm text-blue-800">
-                Based on {nationalData['3%'].num_batches} batches from {nationalData['3%'].num_sites} sites.
+                Based on {nationalData['3%'].num_records} records from {nationalData['3%'].num_sites} sites.
               </p>
               <p className="text-sm text-blue-800">
                 <strong>Range:</strong> {nationalData['3%'].min}-{nationalData['3%'].max} minutes
@@ -218,7 +218,7 @@ export default function PatternViewerPage() {
           <div>
             <h3 className="font-semibold mb-2">Data Aggregation</h3>
             <p className="text-sm">
-              <strong>Data Sources:</strong> Anonymized batch records from AMC sites, quality-controlled optimal time determinations,
+              <strong>Data Sources:</strong> Anonymized records from AMC sites, quality-controlled optimal time determinations,
               verified against AMC SOPs.
             </p>
             <p className="text-sm mt-2">
@@ -241,8 +241,8 @@ export default function PatternViewerPage() {
           <div>
             <h3 className="font-semibold mb-2">Updates</h3>
             <p className="text-sm">
-              Pattern data is updated as new batch records are submitted.
-              Current data represents {nationalData['10%'].num_batches + nationalData['3%'].num_batches} batches
+              Pattern data is updated as new records are submitted.
+              Current data represents {nationalData['10%'].num_records + nationalData['3%'].num_records} records
               from {Math.max(nationalData['10%'].num_sites, nationalData['3%'].num_sites)} sites.
             </p>
           </div>

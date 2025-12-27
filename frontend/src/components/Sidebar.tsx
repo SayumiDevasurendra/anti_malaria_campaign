@@ -2,13 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Target, Clock, BarChart3, TrendingUp } from 'lucide-react'
+import { Home, Target, Clock, TrendingUp } from 'lucide-react'
 
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Single Slide Grading', href: '/single-slide', icon: Target },
   { name: 'Optimal Time Finder', href: '/optimal-time', icon: Clock },
-  { name: 'Batch Analysis', href: '/batch-analysis', icon: BarChart3 },
   { name: 'Pattern Viewer', href: '/pattern-viewer', icon: TrendingUp },
 ]
 

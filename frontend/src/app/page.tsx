@@ -1,5 +1,5 @@
 import React from 'react'
-import { Microscope, Target, Clock, BarChart3, TrendingUp } from 'lucide-react'
+import { Microscope, Target, Clock, TrendingUp } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -33,7 +33,7 @@ export default function HomePage() {
           <FeatureCard
             icon={<Clock className="w-8 h-8 text-primary" />}
             title="Optimal Time Selection"
-            description="Find the earliest acceptable staining time for each batch"
+            description="Find the earliest acceptable staining time for each staining session"
             features={[
               'Minute-by-minute sweep',
               '10% rapid method (5-15 min)',
@@ -42,14 +42,14 @@ export default function HomePage() {
             ]}
           />
           <FeatureCard
-            icon={<BarChart3 className="w-8 h-8 text-primary" />}
-            title="Batch Analytics"
-            description="Track and analyze staining patterns across batches and sites"
+            icon={<TrendingUp className="w-8 h-8 text-primary" />}
+            title="Pattern Viewer"
+            description="View country-level staining time patterns and regional trends"
             features={[
-              'Batch comparison',
+              'National data aggregation',
               'Site-level patterns',
-              'National aggregation',
-              'Trend visualization'
+              'Regional recommendations',
+              'Historical trend analysis'
             ]}
           />
         </div>
@@ -71,13 +71,8 @@ export default function HomePage() {
           />
           <GuideStep
             number={3}
-            title="Batch Analysis"
-            description="Upload batch metadata CSV, compare optimal times across batches, and track site-level patterns"
-          />
-          <GuideStep
-            number={4}
             title="View National Patterns"
-            description="Explore aggregated staining time data and see recommended starting times by region"
+            description="Explore aggregated staining time data from across Sri Lanka and see recommended starting times by region"
           />
         </div>
       </section>

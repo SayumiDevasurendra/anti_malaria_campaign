@@ -23,7 +23,6 @@ export default function SingleSlidePage() {
   const [dilution, setDilution] = useState('10%')
   const [smearType, setSmearType] = useState('thin')
   const [stainTime, setStainTime] = useState(0)
-  const [batchId, setBatchId] = useState('')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -47,7 +46,6 @@ export default function SingleSlidePage() {
       formData.append('dilution', dilution)
       formData.append('smear_type', smearType)
       formData.append('stain_time', stainTime.toString())
-      formData.append('batch_id', batchId)
 
       const response = await axios.post('/api/grade-slide', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -151,7 +149,7 @@ export default function SingleSlidePage() {
                 </select>
               </div>
 
-              <div>
+              <div className="col-span-2">
                 <label className="block text-sm font-medium mb-2">Staining Time (min)</label>
                 <input
                   type="number"
@@ -159,17 +157,6 @@ export default function SingleSlidePage() {
                   onChange={(e) => setStainTime(parseInt(e.target.value))}
                   className="w-full px-3 py-2 border rounded-lg"
                   min="0"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Batch ID</label>
-                <input
-                  type="text"
-                  value={batchId}
-                  onChange={(e) => setBatchId(e.target.value)}
-                  placeholder="Optional"
-                  className="w-full px-3 py-2 border rounded-lg"
                 />
               </div>
             </div>
