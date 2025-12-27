@@ -293,8 +293,8 @@ class StainingTimeOptimizer:
         return "; ".join([explanations.get(code, code) for code in reason_codes])
 
 
-class BatchOptimalTimeTracker:
-    """Track optimal minutes across batches and sites"""
+class OptimalTimeTracker:
+    """Track optimal minutes across sites"""
 
     def __init__(self, storage_path: str = 'data/data_04/optimal_times.csv'):
         """
@@ -311,13 +311,12 @@ class BatchOptimalTimeTracker:
             self.records = pd.read_csv(self.storage_path)
         else:
             self.records = pd.DataFrame(columns=[
-                'batch_id', 'site', 'dilution', 'optimal_minute',
+                'site', 'dilution', 'optimal_minute',
                 'pass_probability', 'mean_grade', 'timestamp'
             ])
 
     def add_record(
         self,
-        batch_id: str,
         site: str,
         dilution: str,
         optimal_minute: int,
@@ -328,7 +327,6 @@ class BatchOptimalTimeTracker:
         import datetime
 
         new_record = {
-            'batch_id': batch_id,
             'site': site,
             'dilution': dilution,
             'optimal_minute': optimal_minute,
@@ -358,7 +356,7 @@ class BatchOptimalTimeTracker:
             'std_optimal_minute': subset['optimal_minute'].std(),
             'median_optimal_minute': subset['optimal_minute'].median(),
             'mode_optimal_minute': subset['optimal_minute'].mode().values[0] if len(subset) > 0 else None,
-            'num_batches': len(subset),
+            'num_records': len(subset),
             'sites': subset['site'].unique().tolist()
         }
 

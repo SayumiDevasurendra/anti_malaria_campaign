@@ -62,8 +62,7 @@ async def grade_slide(
     file: UploadFile = File(...),
     dilution: Optional[str] = Form(None),
     smear_type: Optional[str] = Form(None),
-    stain_time: Optional[int] = Form(None),
-    batch_id: Optional[str] = Form(None)
+    stain_time: Optional[int] = Form(None)
 ):
     """
     Grade a single slide image
@@ -107,8 +106,7 @@ async def grade_slide(
                 "metadata": {
                     "dilution": dilution,
                     "smear_type": smear_type,
-                    "stain_time": stain_time,
-                    "batch_id": batch_id
+                    "stain_time": stain_time
                 }
             }
 

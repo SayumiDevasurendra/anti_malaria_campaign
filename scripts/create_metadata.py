@@ -23,11 +23,11 @@ def parse_filename(filename: str) -> Optional[Dict]:
     """
     Parse metadata from standardized filename
 
-    Expected format: dilution_batchID_timemin_grade_smeartype.ext
-    Example: 10%_batch1_10min_3_thick.jpg
+    Expected format: dilution_timemin_grade_smeartype.ext or dilution_timemin_grade_smeartype_###.ext
+    Example: 10%_10min_3_thick.jpg or 10%_10min_3_thick_001.jpg
     """
-    # Pattern for standardized filenames
-    pattern = r'(?P<dilution>\d+%)_batch(?P<batch>\d+)_(?P<time>\d+)min_(?P<grade>[1-5IViv]+)_(?P<smear>thin|thick)'
+    # Pattern for standardized filenames (with optional counter)
+    pattern = r'(?P<dilution>\d+%)_(?P<time>\d+)min_(?P<grade>[1-5IViv]+)_(?P<smear>thin|thick)(?:_\d{3})?'
 
     match = re.search(pattern, filename, re.IGNORECASE)
     if match:
@@ -46,7 +46,6 @@ def parse_filename(filename: str) -> Optional[Dict]:
 
         return {
             'dilution': metadata['dilution'],
-            'batch': int(metadata['batch']),
             'time_minutes': int(metadata['time']),
             'grade_numeric': grade_numeric,
             'grade_label': grade_label,
@@ -100,8 +99,8 @@ def create_metadata(data_dir: str, output_path: str):
     # Create DataFrame
     df = pd.DataFrame(metadata_list)
 
-    # Sort by dilution, batch, time, smear
-    df = df.sort_values(['dilution', 'batch', 'time_minutes', 'smear_type'])
+    # Sort by dilution, time, smear
+    df = df.sort_values(['dilution', 'time_minutes', 'smear_type'])
 
     # Save to CSV
     output_file = Path(output_path)
@@ -118,8 +117,6 @@ def create_metadata(data_dir: str, output_path: str):
     print(df['grade_label'].value_counts().sort_index())
     print(f"\nBy Smear Type:")
     print(df['smear_type'].value_counts())
-    print(f"\nBy Batch:")
-    print(df.groupby('dilution')['batch'].value_counts().sort_index())
     print()
 
     if failed:

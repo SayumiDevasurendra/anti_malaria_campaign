@@ -35,17 +35,16 @@ data = []
 for img_path in image_files:
     filename = img_path.name
 
-    # Pattern: dilution_batch#_time_grade_smear.jpg
-    # Example: 10%_batch1_10min_3_thick.jpg
-    match = re.match(r'(\d+%)_batch(\d+)_(\d+)min_(\d+)_(thick|thin)\.jpg', filename)
+    # Pattern: dilution_time_grade_smear.jpg or dilution_time_grade_smear_###.jpg
+    # Example: 10%_10min_3_thick.jpg or 10%_10min_3_thick_001.jpg
+    match = re.match(r'(\d+%)_(\d+)min_(\d+)_(thick|thin)(?:_\d{3})?\.jpg', filename)
 
     if match:
-        dilution, batch, time_min, grade, smear_type = match.groups()
+        dilution, time_min, grade, smear_type = match.groups()
 
         data.append({
             'filename': str(img_path),
             'dilution': dilution,
-            'batch': int(batch),
             'time_minutes': int(time_min),
             'grade_label': grade,
             'grade_numeric': int(grade),

@@ -25,13 +25,13 @@ class DatasetOrganizer:
     # Regex patterns to extract metadata
     PARSE_PATTERNS = [
         # Pattern: "10% Batch 1 10 min thick smear Grade 3"
-        r'(?P<dilution>\d+%?)\s*(?:batch|bach|BATCH|BACH)\s*(?P<batch>\d+)\s+(?P<time>\d+)\s*min\s*(?P<smear>thin|thick|THIN|THICK)\s*smear\s*(?:grade\s*)?(?P<grade>[1-5IViv]+)',
+        r'(?P<dilution>\d+%?)\s*(?:batch|bach|BATCH|BACH)\s*\d+\s+(?P<time>\d+)\s*min\s*(?P<smear>thin|thick|THIN|THICK)\s*smear\s*(?:grade\s*)?(?P<grade>[1-5IViv]+)',
 
         # Pattern: "positive 3% batch 1 26 min thick smear grade 2"
-        r'(?:positive\s+)?(?P<dilution>\d+%?)\s*(?:batch|bach|BATCH|BACH)\s*(?P<batch>\d+)[\s,]*(?P<time>\d+)\s*min\s*(?P<smear>thin|thick|THIN|THICK)\s*smear\s*(?:grade\s*)?(?P<grade>[1-5IViv]+)',
+        r'(?:positive\s+)?(?P<dilution>\d+%?)\s*(?:batch|bach|BATCH|BACH)\s*\d+[\s,]*(?P<time>\d+)\s*min\s*(?P<smear>thin|thick|THIN|THICK)\s*smear\s*(?:grade\s*)?(?P<grade>[1-5IViv]+)',
 
         # Pattern: Missing grade - "3% BATCH 1 27 MIN THICK SMEAR"
-        r'(?P<dilution>\d+%?)\s*(?:batch|bach|BATCH|BACH)\s*(?P<batch>\d+)[\s,]*(?P<time>\d+)\s*min\s*(?P<smear>thin|thick|THIN|THICK)\s*smear',
+        r'(?P<dilution>\d+%?)\s*(?:batch|bach|BATCH|BACH)\s*\d+[\s,]*(?P<time>\d+)\s*min\s*(?P<smear>thin|thick|THIN|THICK)\s*smear',
     ]
 
     GRADE_NORMALIZE = {
@@ -90,7 +90,6 @@ class DatasetOrganizer:
 
                 return {
                     'dilution': dilution,
-                    'batch': metadata.get('batch', 'X'),
                     'time': metadata['time'],
                     'grade': grade,
                     'grade_numeric': grade_numeric,
@@ -102,12 +101,11 @@ class DatasetOrganizer:
     def generate_new_filename(self, metadata: Dict, extension: str) -> str:
         """Generate standardized filename"""
         dilution = metadata['dilution']
-        batch = metadata['batch']
         time = metadata['time']
         grade = metadata['grade']
         smear = metadata['smear']
 
-        return f"{dilution}_batch{batch}_{time}min_{grade}_{smear}{extension}"
+        return f"{dilution}_{time}min_{grade}_{smear}{extension}"
 
     def organize_dataset(self, output_dir: str, dry_run: bool = True):
         """
@@ -133,6 +131,7 @@ class DatasetOrganizer:
         copy_count = 0
         fail_count = 0
         failed_files = []
+        filename_counter = {}
 
         print("="*80)
         print("PROCESSING FILES")
@@ -152,13 +151,23 @@ class DatasetOrganizer:
                 continue
 
             new_filename = self.generate_new_filename(metadata, extension)
+
+            # Handle duplicate filenames by adding counter
+            if new_filename in filename_counter:
+                filename_counter[new_filename] += 1
+                base_name = new_filename.rsplit('.', 1)[0]
+                ext = new_filename.rsplit('.', 1)[1]
+                new_filename = f"{base_name}_{filename_counter[new_filename]:03d}.{ext}"
+            else:
+                filename_counter[new_filename] = 0
+
             new_path = output_path / new_filename
 
             # Show first 20 files in detail, then just count
             if copy_count < 20:
                 print(f"✓ {img_path.relative_to(self.input_dir)}")
                 print(f"  → {new_filename}")
-                print(f"  Metadata: dilution={metadata['dilution']}, batch={metadata['batch']}, "
+                print(f"  Metadata: dilution={metadata['dilution']}, "
                       f"time={metadata['time']}min, grade={metadata['grade']}, smear={metadata['smear']}")
                 print()
 
