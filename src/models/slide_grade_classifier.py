@@ -247,7 +247,7 @@ def create_slide_grade_model(
             dropout=dropout
         )
     elif model_type == 'multi_task':
-        return MultiTaskSlideModel(
+        return SlideGradeMultiTaskModel(
             architecture=architecture,
             num_grade_classes=num_grade_classes,
             num_reason_classes=num_reason_classes,

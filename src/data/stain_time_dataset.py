@@ -46,10 +46,13 @@ class StainTimeDataset(Dataset):
 
     def _verify_files(self):
         """Verify that all image files exist"""
+        # Determine which column has file paths
+        filepath_col = 'filepath' if 'filepath' in self.metadata_df.columns else 'filename'
+
         missing = []
         for idx, row in self.metadata_df.iterrows():
-            if not Path(row['filepath']).exists():
-                missing.append(row['filepath'])
+            if not Path(row[filepath_col]).exists():
+                missing.append(row[filepath_col])
 
         if missing:
             print(f"Warning: {len(missing)} files not found:")
@@ -59,7 +62,7 @@ class StainTimeDataset(Dataset):
                 print(f"  ... and {len(missing) - 5} more")
 
             # Remove missing files
-            valid_mask = self.metadata_df['filepath'].apply(lambda x: Path(x).exists())
+            valid_mask = self.metadata_df[filepath_col].apply(lambda x: Path(x).exists())
             self.metadata_df = self.metadata_df[valid_mask].reset_index(drop=True)
             print(f"Dataset reduced to {len(self.metadata_df)} valid images")
 
@@ -79,8 +82,9 @@ class StainTimeDataset(Dataset):
         # Get metadata
         row = self.metadata_df.iloc[idx]
 
-        # Load image
-        image_path = Path(row['filepath'])
+        # Load image (handle both 'filepath' and 'filename' columns)
+        filepath_col = 'filepath' if 'filepath' in row else 'filename'
+        image_path = Path(row[filepath_col])
         image = Image.open(image_path).convert('RGB')
 
         # Apply stain normalization if enabled
@@ -111,7 +115,7 @@ class StainTimeDataset(Dataset):
             return image, grade
 
 
-class StainTimeMultiTaskDataset(MalariaSlideDataset):
+class StainTimeMultiTaskDataset(StainTimeDataset):
     """Dataset for multi-task learning (grade + failure reasons)"""
 
     # Failure reason indices
