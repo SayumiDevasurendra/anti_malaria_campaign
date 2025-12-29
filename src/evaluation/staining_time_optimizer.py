@@ -1,11 +1,5 @@
 """
-Staining Time Optimizer Module
-
-Determines optimal Giemsa staining time from minute-by-minute sweeps and provides
-SOP-aligned failure diagnosis with corrective actions.
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
+Staining time optimizer: determines optimal Giemsa staining time with SOP-aligned failure diagnosis
 """
 
 import torch
@@ -29,16 +23,6 @@ class StainingTimeOptimizer:
         confidence_threshold: float = 0.8,
         stability_window: int = 2  # Consecutive acceptable minutes
     ):
-        """
-        Initialize optimal time selector
-
-        Args:
-            model: Trained grade classification model
-            device: Device ('cuda' or 'cpu')
-            pass_threshold: ONLY this exact grade is acceptable (AMC: Grade III only)
-            confidence_threshold: Minimum confidence for pass prediction
-            stability_window: Number of consecutive acceptable minutes
-        """
         self.model = model.to(device)
         self.model.eval()
         self.device = device
@@ -48,15 +32,7 @@ class StainingTimeOptimizer:
 
     @torch.no_grad()
     def predict_grade(self, images: torch.Tensor) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Predict grades and confidences for images
-
-        Args:
-            images: Batch of images (B, C, H, W)
-
-        Returns:
-            Tuple of (predicted_grades, confidences, probabilities)
-        """
+        """Predict grades and confidences for images"""
         images = images.to(self.device)
 
         # Forward pass
@@ -74,15 +50,7 @@ class StainingTimeOptimizer:
         return grades, confidences, probs
 
     def compute_pass_probability(self, probs: np.ndarray) -> float:
-        """
-        Compute probability of passing (ONLY Grade == pass_threshold, per AMC)
-
-        Args:
-            probs: Probability distribution over grades (num_samples, num_classes)
-
-        Returns:
-            Probability of achieving the exact passing grade (AMC: Grade III only)
-        """
+        """Compute probability of passing (ONLY Grade == pass_threshold, per AMC)"""
         # AMC: ONLY Grade III is acceptable (not >= III)
         # Grades are 0-indexed, so pass_threshold=3 means index=2
         pass_idx = self.pass_threshold - 1
@@ -95,16 +63,7 @@ class StainingTimeOptimizer:
         images: torch.Tensor,
         minute: int
     ) -> Dict:
-        """
-        Analyze slides from a specific minute
-
-        Args:
-            images: Images from this minute
-            minute: Staining time in minutes
-
-        Returns:
-            Analysis dictionary
-        """
+        """Analyze slides from a specific minute"""
         grades, confidences, probs = self.predict_grade(images)
 
         # Compute pass probability
@@ -134,15 +93,7 @@ class StainingTimeOptimizer:
         self,
         minute_analyses: Dict[int, Dict]
     ) -> Dict:
-        """
-        Select earliest acceptable minute from sweep analyses
-
-        Args:
-            minute_analyses: Dictionary mapping minute -> analysis results
-
-        Returns:
-            Selection result with optimal minute and reasoning
-        """
+        """Select earliest acceptable minute from sweep analyses"""
         # Sort minutes
         sorted_minutes = sorted(minute_analyses.keys())
 
@@ -193,15 +144,7 @@ class StainingTimeOptimizer:
         return result
 
     def explain_failure(self, analysis: Dict) -> Dict:
-        """
-        Provide AMC MM-SOP-03C compliant explanation for failing slides
-
-        Args:
-            analysis: Analysis results for a failing slide
-
-        Returns:
-            Explanation with reason codes and quick fixes per AMC guidelines
-        """
+        """Provide AMC MM-SOP-03C compliant explanation for failing slides"""
         mean_grade = analysis['mean_grade']
         pass_prob = analysis['pass_probability']
 
@@ -297,12 +240,6 @@ class OptimalTimeTracker:
     """Track optimal minutes across sites"""
 
     def __init__(self, storage_path: str = 'data/data_04/optimal_times.csv'):
-        """
-        Initialize tracker
-
-        Args:
-            storage_path: Path to store historical records
-        """
         self.storage_path = Path(storage_path)
         self.storage_path.parent.mkdir(parents=True, exist_ok=True)
 

@@ -1,12 +1,4 @@
-"""
-Balanced Dataset with Targeted Augmentation
-
-Custom dataset class that applies stronger augmentation to minority classes
-to help balance the training distribution.
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
-"""
+"""Balanced dataset with targeted augmentation for minority classes"""
 
 import torch
 from torch.utils.data import Dataset
@@ -18,12 +10,7 @@ import numpy as np
 
 
 class BalancedStainTimeDataset(Dataset):
-    """
-    Dataset with targeted augmentation for minority classes
-
-    Applies stronger data augmentation to underrepresented grades
-    to synthetically increase their diversity.
-    """
+    """Dataset with stronger augmentation for underrepresented grades"""
 
     def __init__(
         self,
@@ -34,18 +21,7 @@ class BalancedStainTimeDataset(Dataset):
         minority_classes: Optional[list] = None,
         return_metadata: bool = False
     ):
-        """
-        Initialize balanced dataset with targeted augmentation
-
-        Args:
-            metadata_df: DataFrame with image metadata
-            base_transform: Standard transformations for all images
-            minority_transform: Stronger augmentation for minority classes
-            stain_normalizer: Optional stain normalization
-            minority_classes: List of class indices to apply stronger augmentation
-                             If None, automatically detects based on distribution
-            return_metadata: Whether to return full metadata dict
-        """
+        """Init with base + minority transforms (auto-detects minorities if not provided)"""
         self.metadata_df = metadata_df.reset_index(drop=True)
         self.base_transform = base_transform
         self.minority_transform = minority_transform
@@ -66,15 +42,7 @@ class BalancedStainTimeDataset(Dataset):
         print(f"  Minority classes (stronger aug): {self.minority_classes}")
 
     def _identify_minority_classes(self, threshold_percentile: int = 40) -> list:
-        """
-        Automatically identify minority classes based on sample count
-
-        Args:
-            threshold_percentile: Classes below this percentile are considered minority
-
-        Returns:
-            List of minority class indices (0-indexed)
-        """
+        """Auto-detect minority classes below Nth percentile"""
         # Get grade distribution (grades are 1-5, need to convert to 0-4 for indices)
         grade_counts = self.metadata_df['grade_numeric'].value_counts()
 
@@ -114,15 +82,7 @@ class BalancedStainTimeDataset(Dataset):
         return len(self.metadata_df)
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int, Optional[Dict]]:
-        """
-        Get item from dataset with targeted augmentation
-
-        Args:
-            idx: Index
-
-        Returns:
-            Tuple of (image_tensor, grade_label, metadata_dict)
-        """
+        """Get item from dataset with targeted augmentation"""
         # Get metadata
         row = self.metadata_df.iloc[idx]
 
@@ -166,12 +126,7 @@ class BalancedStainTimeDataset(Dataset):
 
 
 class HybridBalancedDataset(Dataset):
-    """
-    Hybrid dataset that combines weighted sampling with targeted augmentation
-
-    This dataset is designed to work with WeightedRandomSampler AND apply
-    stronger augmentation to minority classes for maximum balance.
-    """
+    """Hybrid dataset combining weighted sampling with targeted augmentation for minority classes"""
 
     def __init__(
         self,
@@ -183,19 +138,6 @@ class HybridBalancedDataset(Dataset):
         augmentation_multiplier: int = 2,
         return_metadata: bool = False
     ):
-        """
-        Initialize hybrid balanced dataset
-
-        Args:
-            metadata_df: DataFrame with image metadata
-            base_transform: Standard transformations for all images
-            minority_transform: Stronger augmentation for minority classes
-            stain_normalizer: Optional stain normalization
-            minority_classes: List of class indices to apply stronger augmentation
-            augmentation_multiplier: How many times to repeat minority class samples
-                                    (synthetically increases their representation)
-            return_metadata: Whether to return full metadata dict
-        """
         self.original_df = metadata_df.reset_index(drop=True)
         self.base_transform = base_transform
         self.minority_transform = minority_transform
@@ -226,12 +168,7 @@ class HybridBalancedDataset(Dataset):
         return [grade - 1 for grade in minority_grades]
 
     def _create_augmented_dataset(self) -> pd.DataFrame:
-        """
-        Create augmented dataset by repeating minority class samples
-
-        Returns:
-            Augmented DataFrame
-        """
+        """Create augmented dataset by repeating minority class samples"""
         dfs = [self.original_df]  # Start with original
 
         # Add copies of minority class samples

@@ -1,12 +1,4 @@
-"""
-Stain Time Image Transformations and Augmentation Module
-
-Conservative augmentation strategies for Giemsa-stained slides that preserve
-diagnostic color information while providing robust training.
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
-"""
+"""Image transforms and augmentation for Giemsa-stained slides"""
 
 import torch
 import torchvision.transforms as T
@@ -25,15 +17,7 @@ class GiemseStainAugmentation:
         saturation: float = 0.05,
         hue: float = 0.02
     ):
-        """
-        Initialize stain-aware augmentation
-
-        Args:
-            brightness: Brightness jitter factor
-            contrast: Contrast jitter factor
-            saturation: Saturation jitter factor (conservative)
-            hue: Hue jitter factor (very conservative)
-        """
+        """Init conservative color jitter for medical images"""
         self.color_jitter = T.ColorJitter(
             brightness=brightness,
             contrast=contrast,
@@ -46,16 +30,7 @@ class GiemseStainAugmentation:
 
 
 def get_stain_time_train_transforms(image_size: Tuple[int, int] = (512, 512), config: Optional[dict] = None):
-    """
-    Get training data transformations
-
-    Args:
-        image_size: Target image size (H, W)
-        config: Augmentation configuration
-
-    Returns:
-        Composed transforms
-    """
+    """Get training transforms: rotation, flips, color jitter, blur"""
     if config is None:
         config = {
             'random_rotation': 15,
@@ -105,15 +80,7 @@ def get_stain_time_train_transforms(image_size: Tuple[int, int] = (512, 512), co
 
 
 def get_stain_time_val_transforms(image_size: Tuple[int, int] = (512, 512)):
-    """
-    Get validation/test data transformations (no augmentation)
-
-    Args:
-        image_size: Target image size (H, W)
-
-    Returns:
-        Composed transforms
-    """
+    """Get validation transforms: resize + normalize only (no augmentation)"""
     return T.Compose([
         T.Resize(image_size),
         T.ToTensor(),
@@ -125,13 +92,7 @@ class StainTimeNormalization:
     """Stain normalization for Giemsa-stained slides"""
 
     def __init__(self, method: str = 'macenko', reference_image: Optional[np.ndarray] = None):
-        """
-        Initialize stain normalization
-
-        Args:
-            method: Normalization method ('macenko', 'reinhard', or 'none')
-            reference_image: Reference image for normalization (optional)
-        """
+        """Init stain normalizer: 'macenko', 'reinhard', or 'none'"""
         self.method = method.lower()
         self.reference_image = reference_image
 
@@ -161,15 +122,7 @@ class StainTimeNormalization:
         return normalizer
 
     def __call__(self, image: np.ndarray) -> np.ndarray:
-        """
-        Apply stain normalization
-
-        Args:
-            image: Input image (H, W, C) in RGB
-
-        Returns:
-            Normalized image
-        """
+        """Apply stain normalization"""
         if self.method == 'none' or self.normalizer is None:
             return image
 
@@ -188,19 +141,7 @@ class StainTimeNormalization:
 
 
 def get_aggressive_augmentation_transforms(image_size: Tuple[int, int] = (512, 512), config: Optional[dict] = None):
-    """
-    Get aggressive augmentation transforms for minority classes
-
-    More aggressive than standard training augmentation to increase
-    diversity in underrepresented classes.
-
-    Args:
-        image_size: Target image size (H, W)
-        config: Base augmentation configuration (will be amplified)
-
-    Returns:
-        Composed transforms
-    """
+    """Get stronger transforms for minority classes (1.5x-2x more aggressive)"""
     if config is None:
         config = {}
 

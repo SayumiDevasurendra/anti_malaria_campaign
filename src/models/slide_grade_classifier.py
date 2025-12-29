@@ -1,12 +1,4 @@
-"""
-Slide Grade Classifier Module
-
-CNN architectures for automated Giemsa slide grading (AMC Grades I-V).
-Supports multiple backbone architectures and multi-task learning.
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
-"""
+"""CNN models for Giemsa slide grading (Grades I-V)"""
 
 import torch
 import torch.nn as nn
@@ -24,15 +16,7 @@ class SlideGradeClassifier(nn.Module):
         pretrained: bool = True,
         dropout: float = 0.3
     ):
-        """
-        Initialize grade classifier
-
-        Args:
-            architecture: Backbone architecture (resnet18, resnet50, efficientnet_b0, mobilenet_v3_small)
-            num_classes: Number of grade classes (5 for I-V)
-            pretrained: Use ImageNet pretrained weights
-            dropout: Dropout probability
-        """
+        """Init classifier: resnet18/50, efficientnet_b0, or mobilenet_v3_small"""
         super().__init__()
 
         self.architecture = architecture
@@ -93,15 +77,7 @@ class SlideGradeClassifier(nn.Module):
         return feature_dims[arch]
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass
-
-        Args:
-            x: Input images (B, C, H, W)
-
-        Returns:
-            Logits (B, num_classes)
-        """
+        """Forward: images (B,C,H,W) -> logits (B, num_classes)"""
         # Extract features
         features = self.backbone(x)
 
@@ -126,16 +102,7 @@ class SlideGradeMultiTaskModel(nn.Module):
         pretrained: bool = True,
         dropout: float = 0.3
     ):
-        """
-        Initialize multi-task model
-
-        Args:
-            architecture: Backbone architecture
-            num_grade_classes: Number of grade classes (5 for I-V)
-            num_reason_classes: Number of failure reasons (multi-label)
-            pretrained: Use ImageNet pretrained weights
-            dropout: Dropout probability
-        """
+        """Init multi-task: grade (5 classes) + failure reasons (6 classes)"""
         super().__init__()
 
         self.architecture = architecture
@@ -163,7 +130,7 @@ class SlideGradeMultiTaskModel(nn.Module):
         )
 
     def _create_backbone(self, architecture: str, pretrained: bool):
-        """Create CNN backbone (same as SlideGradeClassifier)"""
+        """Create CNN backbone"""
         arch = architecture.lower()
 
         if arch == 'resnet18':
@@ -194,15 +161,7 @@ class SlideGradeMultiTaskModel(nn.Module):
         return feature_dims[self.architecture.lower()]
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        """
-        Forward pass
-
-        Args:
-            x: Input images (B, C, H, W)
-
-        Returns:
-            Tuple of (grade_logits, reason_logits)
-        """
+        """Forward: images -> (grade_logits, reason_logits)"""
         # Extract features
         features = self.backbone(x)
 
@@ -225,20 +184,7 @@ def create_slide_grade_model(
     pretrained: bool = True,
     dropout: float = 0.3
 ) -> nn.Module:
-    """
-    Factory function to create models
-
-    Args:
-        model_type: 'single_task' or 'multi_task'
-        architecture: CNN architecture
-        num_grade_classes: Number of grade classes
-        num_reason_classes: Number of failure reason classes
-        pretrained: Use pretrained weights
-        dropout: Dropout probability
-
-    Returns:
-        Model instance
-    """
+    """Create model: 'single_task' (grade only) or 'multi_task' (grade + reasons)"""
     if model_type == 'single_task':
         return SlideGradeClassifier(
             architecture=architecture,

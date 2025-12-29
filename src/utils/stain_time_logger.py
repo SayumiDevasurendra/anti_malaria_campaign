@@ -1,10 +1,5 @@
 """
-Stain Time Logging Module
-
-Configurable logging with console and file output support.
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
+Configurable logging with console and file output
 """
 
 import logging
@@ -21,19 +16,7 @@ def setup_stain_time_logger(
     console_output: bool = True,
     file_output: bool = True
 ) -> logging.Logger:
-    """
-    Set up project logger
-
-    Args:
-        name: Logger name
-        log_dir: Directory for log files
-        level: Logging level (DEBUG, INFO, WARNING, ERROR)
-        console_output: Whether to output to console
-        file_output: Whether to output to file
-
-    Returns:
-        Configured logger
-    """
+    """Set up project logger with console and file output"""
     logger = logging.getLogger(name)
     logger.setLevel(getattr(logging, level.upper()))
 

@@ -1,12 +1,8 @@
 """
-Script to create metadata CSV and train/val/test splits from processed images
-
-Usage:
-    python scripts/stain_time_split_generator.py
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
+Create train/val/test splits from processed images
+Usage: python scripts/stain_time_split_generator.py
 """
+
 import os
 import re
 import pandas as pd

@@ -1,10 +1,5 @@
 """
-Stain Time Configuration Module
-
-YAML-based configuration management with dot-notation access.
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
+YAML-based configuration management with dot-notation access
 """
 
 import yaml
@@ -16,12 +11,6 @@ class StainTimeConfig:
     """Load and manage project configuration"""
 
     def __init__(self, config_path: str = "config/config.yaml"):
-        """
-        Initialize configuration loader
-
-        Args:
-            config_path: Path to YAML configuration file
-        """
         self.config_path = Path(config_path)
         self.config = self._load_config()
 
@@ -36,16 +25,7 @@ class StainTimeConfig:
         return config
 
     def get(self, key: str, default: Any = None) -> Any:
-        """
-        Get configuration value using dot notation
-
-        Args:
-            key: Configuration key (e.g., 'data.image_size')
-            default: Default value if key not found
-
-        Returns:
-            Configuration value
-        """
+        """Get configuration value using dot notation (e.g., 'data.image_size')"""
         keys = key.split('.')
         value = self.config
 

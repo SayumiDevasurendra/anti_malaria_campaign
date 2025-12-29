@@ -1,12 +1,4 @@
-"""
-Slide Grade Training Pipeline Module
-
-Training manager with support for mixed precision, learning rate scheduling,
-checkpointing, and early stopping.
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
-"""
+"""Training pipeline with AMP, early stopping, and checkpointing"""
 
 import torch
 import torch.nn as nn
@@ -35,21 +27,7 @@ class SlideGradeTrainer:
         save_dir: str = 'checkpoints/checkpoints_04',
         logger: Optional[Callable] = None
     ):
-        """
-        Initialize trainer
-
-        Args:
-            model: PyTorch model
-            train_loader: Training data loader
-            val_loader: Validation data loader
-            criterion: Loss function
-            optimizer: Optimizer
-            scheduler: Learning rate scheduler
-            device: Device ('cuda' or 'cpu')
-            use_amp: Use automatic mixed precision
-            save_dir: Directory to save checkpoints
-            logger: Logger function
-        """
+        """Init trainer with model, data loaders, optimizer, and optional AMP"""
         self.model = model.to(device)
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -224,14 +202,7 @@ class SlideGradeTrainer:
         early_stopping_patience: Optional[int] = None,
         save_frequency: int = 5
     ):
-        """
-        Train model for multiple epochs
-
-        Args:
-            num_epochs: Number of epochs to train
-            early_stopping_patience: Stop if no improvement for N epochs
-            save_frequency: Save checkpoint every N epochs
-        """
+        """Train for N epochs with optional early stopping"""
         patience_counter = 0
 
         for epoch in range(num_epochs):

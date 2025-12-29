@@ -1,10 +1,5 @@
 """
-Stain Time Reproducibility Module
-
-Random seed management for reproducible experiments.
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
+Random seed management for reproducible experiments
 """
 
 import random
@@ -13,14 +8,7 @@ import torch
 
 
 def set_stain_time_seed(seed: int = 42, deterministic: bool = True, benchmark: bool = False):
-    """
-    Set random seeds for reproducibility
-
-    Args:
-        seed: Random seed value
-        deterministic: Use deterministic algorithms (slower but reproducible)
-        benchmark: Enable cudnn benchmark (faster but less reproducible)
-    """
+    """Set random seeds for reproducibility"""
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)

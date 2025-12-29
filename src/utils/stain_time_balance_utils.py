@@ -1,13 +1,5 @@
 """
-Class Imbalance Utilities
-
-Utilities for handling class imbalance in slide grading dataset:
-- Class weight calculation
-- Weighted sampler creation
-- Class distribution analysis
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
+Class imbalance utilities: class weights, weighted sampler, distribution analysis
 """
 
 import numpy as np
@@ -18,19 +10,7 @@ import pandas as pd
 
 
 def calculate_class_weights(labels: np.ndarray, num_classes: int = 5, method: str = 'inverse') -> torch.Tensor:
-    """
-    Calculate class weights for imbalanced dataset
-
-    Args:
-        labels: Array of class labels (0-indexed)
-        num_classes: Total number of classes
-        method: Weight calculation method
-            - 'inverse': weight = 1 / frequency
-            - 'effective': Effective number of samples (handles extreme imbalance better)
-
-    Returns:
-        Tensor of class weights
-    """
+    """Calculate class weights for imbalanced dataset using 'inverse' or 'effective' method"""
     # Count samples per class
     class_counts = Counter(labels)
 
@@ -74,16 +54,7 @@ def calculate_class_weights(labels: np.ndarray, num_classes: int = 5, method: st
 
 
 def create_weighted_sampler(labels: np.ndarray, num_classes: int = 5) -> torch.utils.data.WeightedRandomSampler:
-    """
-    Create WeightedRandomSampler for balanced batch sampling
-
-    Args:
-        labels: Array of class labels (0-indexed)
-        num_classes: Total number of classes
-
-    Returns:
-        WeightedRandomSampler instance
-    """
+    """Create WeightedRandomSampler for balanced batch sampling"""
     # Calculate sample weights (inverse frequency)
     class_counts = Counter(labels)
 
@@ -104,16 +75,7 @@ def create_weighted_sampler(labels: np.ndarray, num_classes: int = 5) -> torch.u
 
 
 def analyze_class_distribution(df: pd.DataFrame, label_column: str = 'grade_numeric') -> Dict:
-    """
-    Analyze class distribution and calculate imbalance metrics
-
-    Args:
-        df: DataFrame with labels
-        label_column: Name of label column
-
-    Returns:
-        Dictionary with distribution statistics
-    """
+    """Analyze class distribution and calculate imbalance metrics"""
     # Get label distribution
     distribution = df[label_column].value_counts().sort_index()
 
@@ -151,13 +113,7 @@ def analyze_class_distribution(df: pd.DataFrame, label_column: str = 'grade_nume
 
 
 def print_class_distribution(stats: Dict, title: str = "Class Distribution"):
-    """
-    Print formatted class distribution statistics
-
-    Args:
-        stats: Statistics dictionary from analyze_class_distribution
-        title: Title for the output
-    """
+    """Print formatted class distribution statistics"""
     print("\n" + "=" * 60)
     print(title)
     print("=" * 60)
@@ -180,17 +136,7 @@ def print_class_distribution(stats: Dict, title: str = "Class Distribution"):
 
 
 def get_sample_weights_per_class(df: pd.DataFrame, label_column: str = 'grade_numeric') -> np.ndarray:
-    """
-    Get sample weight for each instance based on its class
-    Useful for weighted loss calculation
-
-    Args:
-        df: DataFrame with labels
-        label_column: Name of label column
-
-    Returns:
-        Array of sample weights
-    """
+    """Get sample weight for each instance based on its class (useful for weighted loss)"""
     labels = df[label_column].values
     class_counts = Counter(labels)
 

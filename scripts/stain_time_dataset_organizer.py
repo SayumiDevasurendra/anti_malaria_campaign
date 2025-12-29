@@ -1,15 +1,6 @@
 """
-Dataset Organization Script - Flatten and Rename
-
-Recursively scans subdirectories, renames files to standard format,
-and copies them to a single output directory.
-
-Usage:
-    python stain_time_dataset_organizer.py --input_dir data/raw --output_dir data/processed --dry_run
-    python stain_time_dataset_organizer.py --input_dir data/raw --output_dir data/processed --execute
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
+Dataset organizer: flatten and rename slide images
+Usage: python stain_time_dataset_organizer.py --input_dir data/raw --output_dir data/processed --execute
 """
 
 import re
@@ -108,13 +99,7 @@ class DatasetOrganizer:
         return f"{dilution}_{time}min_{grade}_{smear}{extension}"
 
     def stain_time_dataset_organizer(self, output_dir: str, dry_run: bool = True):
-        """
-        Flatten all images to single directory with renamed files
-
-        Args:
-            output_dir: Output directory path
-            dry_run: If True, only preview changes
-        """
+        """Flatten all images to single directory with renamed files"""
         images = self.scan_images_recursive()
         output_path = Path(output_dir)
 

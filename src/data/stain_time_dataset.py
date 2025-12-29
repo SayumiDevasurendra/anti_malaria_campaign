@@ -1,12 +1,4 @@
-"""
-Stain Time PyTorch Dataset Module
-
-PyTorch Dataset classes for loading and preprocessing Giemsa-stained slide images
-for stain time optimization and grade classification.
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
-"""
+"""PyTorch datasets for Giemsa-stained slide images"""
 
 import torch
 from torch.utils.data import Dataset
@@ -27,15 +19,6 @@ class StainTimeDataset(Dataset):
         stain_normalizer: Optional[Callable] = None,
         return_metadata: bool = False
     ):
-        """
-        Initialize dataset
-
-        Args:
-            metadata_df: DataFrame with image metadata
-            transform: Image transformations
-            stain_normalizer: Optional stain normalization
-            return_metadata: Whether to return full metadata dict
-        """
         self.metadata_df = metadata_df.reset_index(drop=True)
         self.transform = transform
         self.stain_normalizer = stain_normalizer
@@ -70,15 +53,7 @@ class StainTimeDataset(Dataset):
         return len(self.metadata_df)
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int, Optional[Dict]]:
-        """
-        Get item from dataset
-
-        Args:
-            idx: Index
-
-        Returns:
-            Tuple of (image_tensor, grade_label, metadata_dict)
-        """
+        """Get item: (image_tensor, grade_label, optional_metadata)"""
         # Get metadata
         row = self.metadata_df.iloc[idx]
 
@@ -136,16 +111,6 @@ class StainTimeMultiTaskDataset(StainTimeDataset):
         return_metadata: bool = False,
         reason_columns: Optional[list] = None
     ):
-        """
-        Initialize multi-task dataset
-
-        Args:
-            metadata_df: DataFrame with image metadata
-            transform: Image transformations
-            stain_normalizer: Optional stain normalization
-            return_metadata: Whether to return full metadata dict
-            reason_columns: List of column names for failure reasons (binary flags)
-        """
         super().__init__(metadata_df, transform, stain_normalizer, return_metadata)
 
         # Default reason columns if not provided
@@ -162,12 +127,7 @@ class StainTimeMultiTaskDataset(StainTimeDataset):
                 print(f"Warning: Reason column '{col}' not found. Initialized with zeros.")
 
     def __getitem__(self, idx: int):
-        """
-        Get item with multi-task labels
-
-        Returns:
-            Tuple of (image_tensor, grade_label, reason_labels, metadata_dict)
-        """
+        """Get item with multi-task labels (image, grade, reason_labels, metadata)"""
         # Get image and grade from parent class
         if self.return_metadata:
             image, grade, metadata = super().__getitem__(idx)

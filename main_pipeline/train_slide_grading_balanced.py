@@ -1,20 +1,6 @@
 """
-Slide Quality Grading Model Training Script (WITH CLASS BALANCING)
-
-Enhanced training script with hybrid approach to handle class imbalance:
-1. Class weights in loss function
-2. Weighted random sampling for balanced batches
-3. Targeted augmentation for minority classes
-
-Usage:
-    # Start fresh training
-    python main_pipeline/train_slide_grading_balanced.py
-
-    # Or with explicit balance method
-    python main_pipeline/train_slide_grading_balanced.py --balance-method hybrid
-
-    # Resume from checkpoint
-    python main_pipeline/train_slide_grading_balanced.py --resume checkpoints/checkpoints_04_balanced/checkpoint_epoch_10.pth
+Slide grading model training with class balancing (weights + sampling + augmentation)
+Usage: python main_pipeline/train_slide_grading_balanced.py --balance-method hybrid --resume checkpoints/checkpoints_04_balanced/checkpoint_epoch_10.pth
 """
 
 import argparse

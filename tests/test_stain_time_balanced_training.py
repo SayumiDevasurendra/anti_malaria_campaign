@@ -1,10 +1,6 @@
 """
-Quick Test Script for Balanced Training Components
-
-Tests that all class balancing components work correctly before full training.
-
-Usage:
-    python tests/test_stain_time_balanced_training.py
+Test script for balanced training components
+Usage: python tests/test_stain_time_balanced_training.py
 """
 
 import sys

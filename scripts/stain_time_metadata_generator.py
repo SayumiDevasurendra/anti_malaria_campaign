@@ -1,15 +1,6 @@
 """
-Create Metadata CSV from Organized Dataset
-
-Scans the organized dataset and creates a metadata CSV file
-with all image information for training.
-
-Usage:
-    python scripts/stain_time_metadata_generator.py
-    python scripts/stain_time_metadata_generator.py --data_dir data/data_04/processed --output data/data_04/splits/metadata.csv
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
+Create metadata CSV from organized dataset
+Usage: python scripts/stain_time_metadata_generator.py --data_dir data/data_04/processed --output data/data_04/splits/metadata.csv
 """
 
 import argparse
@@ -20,12 +11,7 @@ from typing import Optional, Dict
 
 
 def parse_filename(filename: str) -> Optional[Dict]:
-    """
-    Parse metadata from standardized filename
-
-    Expected format: dilution_timemin_grade_smeartype.ext or dilution_timemin_grade_smeartype_###.ext
-    Example: 10%_10min_3_thick.jpg or 10%_10min_3_thick_001.jpg
-    """
+    """Parse metadata from standardized filename (e.g., 10%_10min_3_thick.jpg)"""
     # Pattern for standardized filenames (with optional counter)
     pattern = r'(?P<dilution>\d+%)_(?P<time>\d+)min_(?P<grade>[1-5IViv]+)_(?P<smear>thin|thick)(?:_\d{3})?'
 
@@ -56,13 +42,7 @@ def parse_filename(filename: str) -> Optional[Dict]:
 
 
 def stain_time_metadata_generator(data_dir: str, output_path: str):
-    """
-    Create metadata CSV from organized dataset
-
-    Args:
-        data_dir: Directory containing organized images
-        output_path: Output CSV path
-    """
+    """Create metadata CSV from organized dataset"""
     data_path = Path(data_dir)
 
     print("="*80)
