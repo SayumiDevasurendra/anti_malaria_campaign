@@ -46,13 +46,13 @@ class PipelineRunner:
             return False
 
     def step1_organize_data(self):
-        """Organize raw data with batch preservation"""
+        """Organize raw data with batch preservation and filter unknowns"""
         cmd = [
             sys.executable,
             'scripts/organize_stain_time_dataset.py',
             '--raw-dir', str(self.raw_dir),
             '--processed-dir', str(self.processed_dir),
-            '--output-csv', str(self.metadata_csv.parent / 'image_metadata_temp.csv')
+            '--output-csv', str(self.metadata_csv)
         ]
 
         if self.execute:

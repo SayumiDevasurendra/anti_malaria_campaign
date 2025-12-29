@@ -271,12 +271,9 @@ class StainTimeDatasetOrganizer:
 
         output_csv_path = Path(output_csv)
         if execute:
-            splits_dir = output_csv_path.parent / 'splits'
-            splits_dir.mkdir(exist_ok=True)
-            final_csv = splits_dir / 'image_metadata.csv'
-
-            labeled_df.to_csv(final_csv, index=False)
-            print(f"\n[OK] Labeled metadata saved to: {final_csv}")
+            output_csv_path.parent.mkdir(parents=True, exist_ok=True)
+            labeled_df.to_csv(output_csv_path, index=False)
+            print(f"\n[OK] Labeled metadata saved to: {output_csv_path}")
             print(f"    ({len(labeled_df)} images with valid grades)")
         else:
             print(f"\n[!]  DRY RUN: Metadata NOT saved (use --execute to save)")
