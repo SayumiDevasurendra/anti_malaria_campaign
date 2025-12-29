@@ -5,8 +5,8 @@ Recursively scans subdirectories, renames files to standard format,
 and copies them to a single output directory.
 
 Usage:
-    python organize_dataset.py --input_dir data/raw --output_dir data/processed --dry_run
-    python organize_dataset.py --input_dir data/raw --output_dir data/processed --execute
+    python stain_time_dataset_organizer.py --input_dir data/raw --output_dir data/processed --dry_run
+    python stain_time_dataset_organizer.py --input_dir data/raw --output_dir data/processed --execute
 
 @author: Sayumi Devasurendra
 @version: 0.1.0
@@ -107,7 +107,7 @@ class DatasetOrganizer:
 
         return f"{dilution}_{time}min_{grade}_{smear}{extension}"
 
-    def organize_dataset(self, output_dir: str, dry_run: bool = True):
+    def stain_time_dataset_organizer(self, output_dir: str, dry_run: bool = True):
         """
         Flatten all images to single directory with renamed files
 
@@ -242,7 +242,7 @@ def main():
     print("="*80)
 
     organizer = DatasetOrganizer(args.input_dir)
-    organizer.organize_dataset(args.output_dir, dry_run=dry_run)
+    organizer.stain_time_dataset_organizer(args.output_dir, dry_run=dry_run)
 
 
 if __name__ == '__main__':

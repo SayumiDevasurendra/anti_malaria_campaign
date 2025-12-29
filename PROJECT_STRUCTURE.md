@@ -5,7 +5,7 @@ anti_malaria_campaign/
 │
 ├── README.md                      # Main project documentation
 ├── requirements.txt               # Python dependencies
-├── train_slide_grading.py        # Main training script (run this to train)
+├── train_slide_grading_balanced        # Main training script (run this to train)
 │
 ├── config/                        # Configuration files
 │   └── config.yaml               # Training & model configuration
@@ -24,9 +24,9 @@ anti_malaria_campaign/
 │
 ├── scripts/                      # Utility scripts
 │   ├── README.md                # Scripts documentation
-│   ├── organize_dataset.py      # Standardize raw images
-│   ├── create_splits.py         # Create train/val/test splits
-│   └── create_metadata.py       # Generate metadata CSV
+│   ├── stain_time_dataset_organizer.py      # Standardize raw images
+│   ├── stain_time_split_generator.py         # Create train/val/test splits
+│   └── stain_time_metadata_generator.py       # Generate metadata CSV
 │
 ├── notebooks/                    # Jupyter notebooks for analysis
 │   ├── comprehensive_data_analysis.ipynb  # Comprehensive data report
@@ -86,17 +86,17 @@ anti_malaria_campaign/
 
 1. **Train the model:**
    ```bash
-   python train_slide_grading.py --config config/config.yaml
+   python train_slide_grading_balanced --config config/config.yaml
    ```
 
 2. **Create data splits:**
    ```bash
-   python scripts/create_splits.py
+   python scripts/stain_time_split_generator.py
    ```
 
 3. **Organize raw images:**
    ```bash
-   python scripts/organize_dataset.py --input_dir data/data_04/raw --output_dir data/data_04/processed --execute
+   python scripts/stain_time_dataset_organizer.py --input_dir data/data_04/raw --output_dir data/data_04/processed --execute
    ```
 
 4. **Analyze dataset:**
@@ -115,6 +115,6 @@ anti_malaria_campaign/
 Only 2 files in root:
 - `README.md` - Documentation
 - `requirements.txt` - Dependencies
-- `train_slide_grading.py` - Main training script
+- `train_slide_grading_balanced` - Main training script
 
 Everything else is properly organized in folders!

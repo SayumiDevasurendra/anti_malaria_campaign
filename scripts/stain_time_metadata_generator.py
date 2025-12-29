@@ -5,8 +5,8 @@ Scans the organized dataset and creates a metadata CSV file
 with all image information for training.
 
 Usage:
-    python scripts/create_metadata.py
-    python scripts/create_metadata.py --data_dir data/data_04/processed --output data/data_04/splits/metadata.csv
+    python scripts/stain_time_metadata_generator.py
+    python scripts/stain_time_metadata_generator.py --data_dir data/data_04/processed --output data/data_04/splits/metadata.csv
 
 @author: Sayumi Devasurendra
 @version: 0.1.0
@@ -55,7 +55,7 @@ def parse_filename(filename: str) -> Optional[Dict]:
     return None
 
 
-def create_metadata(data_dir: str, output_path: str):
+def stain_time_metadata_generator(data_dir: str, output_path: str):
     """
     Create metadata CSV from organized dataset
 
@@ -151,7 +151,7 @@ def main():
 
     args = parser.parse_args()
 
-    create_metadata(args.data_dir, args.output)
+    stain_time_metadata_generator(args.data_dir, args.output)
 
 
 if __name__ == '__main__':

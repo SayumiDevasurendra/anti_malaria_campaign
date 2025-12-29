@@ -4,7 +4,7 @@ Quick Test Script for Balanced Training Components
 Tests that all class balancing components work correctly before full training.
 
 Usage:
-    python test_balanced_training.py
+    python tests/test_stain_time_balanced_training.py
 """
 
 import sys
@@ -21,13 +21,13 @@ print("=" * 70)
 # Test 1: Import all modules
 print("\n[1/6] Testing imports...")
 try:
-    from utils.class_balance_utils import (
+    from utils.stain_time_balance_utils import (
         calculate_class_weights,
         create_weighted_sampler,
         analyze_class_distribution,
         print_class_distribution
     )
-    from data.balanced_dataset import BalancedStainTimeDataset
+    from data.stain_time_balanced_dataset import BalancedStainTimeDataset
     from data.stain_time_dataset import StainTimeDataset
     from data.stain_time_transforms import (
         get_stain_time_train_transforms,
@@ -112,6 +112,6 @@ print("ALL TESTS PASSED! ✓")
 print("=" * 70)
 print("\nYou're ready to train with balanced approach:")
 print("  python train_slide_grading_balanced.py --config config/config.yaml --balance-method hybrid")
-print("\nOr explore the analysis notebook:")
-print("  jupyter notebook notebooks/class_imbalance_analysis.ipynb")
+print("\nTo run this test again:")
+print("  python tests/test_stain_time_balanced_training.py")
 print("=" * 70)

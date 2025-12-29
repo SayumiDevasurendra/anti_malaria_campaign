@@ -4,11 +4,11 @@ This folder contains utility scripts for data preparation and organization.
 
 ## Available Scripts
 
-### 1. `organize_dataset.py`
+### 1. `stain_time_dataset_organizer.py`
 **Purpose:** Standardize and rename raw slide images
 **Usage:**
 ```bash
-python scripts/organize_dataset.py --input_dir data/data_04/raw --output_dir data/data_04/processed --execute
+python scripts/stain_time_dataset_organizer.py --input_dir data/data_04/raw --output_dir data/data_04/processed --execute
 ```
 **What it does:**
 - Scans raw images recursively
@@ -18,11 +18,11 @@ python scripts/organize_dataset.py --input_dir data/data_04/raw --output_dir dat
 
 ---
 
-### 2. `create_splits.py`
+### 2. `stain_time_split_generator.py`
 **Purpose:** Create train/validation/test splits from processed images
 **Usage:**
 ```bash
-python scripts/create_splits.py
+python scripts/stain_time_split_generator.py
 ```
 **What it does:**
 - Scans processed images
@@ -32,11 +32,11 @@ python scripts/create_splits.py
 
 ---
 
-### 3. `create_metadata.py`
+### 3. `stain_time_metadata_generator.py`
 **Purpose:** Generate metadata CSV from organized images
 **Usage:**
 ```bash
-python scripts/create_metadata.py
+python scripts/stain_time_metadata_generator.py
 ```
 **What it does:**
 - Scans processed images
@@ -49,12 +49,12 @@ python scripts/create_metadata.py
 
 1. **Organize raw data:**
    ```bash
-   python scripts/organize_dataset.py --input_dir data/data_04/raw --output_dir data/data_04/processed --execute
+   python scripts/stain_time_dataset_organizer.py --input_dir data/data_04/raw --output_dir data/data_04/processed --execute
    ```
 
 2. **Create train/val/test splits:**
    ```bash
-   python scripts/create_splits.py
+   python scripts/stain_time_split_generator.py
    ```
 
 3. **Deep analysis (optional):**
@@ -62,5 +62,5 @@ python scripts/create_metadata.py
 
 4. **Train model:**
    ```bash
-   python train_slide_grading.py --config config/config.yaml
+   python train_slide_grading_balanced --config config/config.yaml
    ```

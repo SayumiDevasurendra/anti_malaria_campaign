@@ -25,13 +25,13 @@ sys.path.insert(0, str(Path(__file__).parent / 'src'))
 from utils.stain_time_config import StainTimeConfig
 from utils.stain_time_logger import setup_stain_time_logger
 from utils.stain_time_seed import set_stain_time_seed
-from utils.class_balance_utils import (
+from utils.stain_time_balance_utils import (
     calculate_class_weights,
     create_weighted_sampler,
     analyze_class_distribution,
     print_class_distribution
 )
-from data.balanced_dataset import BalancedStainTimeDataset
+from data.stain_time_balanced_dataset import BalancedStainTimeDataset
 from data.stain_time_dataset import StainTimeDataset
 from data.stain_time_transforms import (
     get_stain_time_train_transforms,

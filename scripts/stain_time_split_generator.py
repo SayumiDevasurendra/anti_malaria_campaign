@@ -2,7 +2,7 @@
 Script to create metadata CSV and train/val/test splits from processed images
 
 Usage:
-    python scripts/create_splits.py
+    python scripts/stain_time_split_generator.py
 
 @author: Sayumi Devasurendra
 @version: 0.1.0
@@ -122,4 +122,4 @@ print("\n" + "="*60)
 print("DONE! Ready to train.")
 print("="*60)
 print("\nNext step:")
-print("  python train_slide_grading.py --config config/config.yaml")
+print("  python train_slide_grading_balanced --config config/config.yaml")
