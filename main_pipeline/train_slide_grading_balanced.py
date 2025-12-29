@@ -7,8 +7,14 @@ Enhanced training script with hybrid approach to handle class imbalance:
 3. Targeted augmentation for minority classes
 
 Usage:
-    python train_slide_grading_balanced.py --config config/config.yaml
-    python train_slide_grading_balanced.py --config config/config.yaml --resume checkpoints/checkpoint.pth
+    # Start fresh training
+    python main_pipeline/train_slide_grading_balanced.py
+
+    # Or with explicit balance method
+    python main_pipeline/train_slide_grading_balanced.py --balance-method hybrid
+
+    # Resume from checkpoint
+    python main_pipeline/train_slide_grading_balanced.py --resume checkpoints/checkpoints_04_balanced/checkpoint_epoch_10.pth
 """
 
 import argparse
@@ -20,7 +26,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-sys.path.insert(0, str(Path(__file__).parent / 'src'))
+# Add parent directory's src to Python path (we're now in main_pipeline/)
+sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 
 from utils.stain_time_config import StainTimeConfig
 from utils.stain_time_logger import setup_stain_time_logger
@@ -45,7 +52,9 @@ from models.slide_grade_trainer import SlideGradeTrainer
 
 def main():
     parser = argparse.ArgumentParser(description='Train AMC Slide Quality Grading Model (Balanced)')
-    parser.add_argument('--config', type=str, default='config/config.yaml',
+    # Default config path is relative to project root (parent of main_pipeline/)
+    default_config = str(Path(__file__).parent.parent / 'config' / 'config.yaml')
+    parser.add_argument('--config', type=str, default=default_config,
                         help='Path to configuration file')
     parser.add_argument('--resume', type=str, default=None,
                         help='Path to checkpoint to resume from')
