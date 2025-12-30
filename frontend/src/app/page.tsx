@@ -21,24 +21,24 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FeatureCard
             icon={<Target className="w-8 h-8 text-primary" />}
-            title="Slide Grading"
-            description="Automated grading of Giemsa-stained slides using AMC criteria (Grades I-V)"
+            title="Single Slide Grading"
+            description="Automated grading with AI-powered visual explanations using AMC criteria (Grades I-V)"
             features={[
-              'Single slide analysis',
-              'Confidence scores',
+              'GradCAM heatmap visualization',
+              'AI-generated explanations',
               'Pass/fail determination',
-              'Failure diagnosis'
+              'SOP troubleshooting checklist'
             ]}
           />
           <FeatureCard
             icon={<Clock className="w-8 h-8 text-primary" />}
-            title="Optimal Time Selection"
-            description="Find the earliest acceptable staining time for each staining session"
+            title="Optimal Time Finder"
+            description="Iteratively find the optimal staining time for your batch through AI-guided recommendations"
             features={[
-              'Minute-by-minute sweep',
-              '10% rapid method (5-15 min)',
-              '3% slow method (30-45 min)',
-              'Stability analysis'
+              'Upload slides one at a time',
+              'AI predicts grade + time adjustment',
+              'Iterative workflow until Grade III',
+              'Automatic time recommendations'
             ]}
           />
           <FeatureCard
@@ -62,12 +62,12 @@ export default function HomePage() {
           <GuideStep
             number={1}
             title="Single Slide Grading"
-            description="Go to Single Slide Grading page, upload a slide image, and view grade, confidence, and pass/fail status"
+            description="Upload a slide image to get automated grading with GradCAM heatmap showing which regions the AI focused on, plus AI-generated explanations and SOP troubleshooting checklist"
           />
           <GuideStep
             number={2}
             title="Find Optimal Staining Time"
-            description="Select dilution (10% or 3%), upload minute-by-minute sweep images, and get recommended optimal time"
+            description="Select dilution (10% or 3%) and smear type, upload a slide with its staining time, get AI recommendation. If not Grade III, stain a new slide at the recommended time and repeat until optimal"
           />
           <GuideStep
             number={3}
@@ -106,12 +106,6 @@ export default function HomePage() {
           </table>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="mt-12 text-center text-gray-600 border-t pt-6">
-        <p className="mb-2">Anti-Malaria Campaign Sri Lanka | Stain Time Optimization Component</p>
-        <p className="text-sm">Author: Sayumi Devasurendra | Version: 0.1.0</p>
-      </footer>
     </div>
   )
 }

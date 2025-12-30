@@ -49,16 +49,6 @@ export default function Sidebar() {
             })}
           </ul>
         </nav>
-
-        {/* About */}
-        <div className="p-4 border-t">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">About</h3>
-          <div className="text-xs text-gray-600">
-            <p className="mb-1"><strong>Component:</strong> Stain Time Optimization</p>
-            <p className="mb-1"><strong>Author:</strong> Sayumi Devasurendra</p>
-            <p><strong>Version:</strong> 0.1.0</p>
-          </div>
-        </div>
       </div>
     </div>
   )

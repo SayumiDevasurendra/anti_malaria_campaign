@@ -9,6 +9,8 @@ interface GradeResult {
   grade_label: string
   confidence: number
   status: string
+  reason: string
+  overlay_image_base64?: string
   probabilities: number[]
 }
 
@@ -21,8 +23,7 @@ export default function SingleSlidePage() {
 
   // Form metadata
   const [dilution, setDilution] = useState('10%')
-  const [smearType, setSmearType] = useState('thin')
-  const [stainTime, setStainTime] = useState(0)
+  const [smearType, setSmearType] = useState('Thin')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -45,50 +46,65 @@ export default function SingleSlidePage() {
       formData.append('file', selectedFile)
       formData.append('dilution', dilution)
       formData.append('smear_type', smearType)
-      formData.append('stain_time', stainTime.toString())
+      formData.append('return_overlay_base64', 'true')
 
-      const response = await axios.post('/api/grade-slide', formData, {
+      const response = await axios.post('http://localhost:8000/api/explain-grade', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
 
       setResult(response.data)
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error analyzing slide')
+      setError(err.response?.data?.error || 'Error analyzing slide')
     } finally {
       setLoading(false)
     }
   }
 
-  const getGradeInfo = (grade: number) => {
-    const gradeInfo = {
-      1: {
-        name: 'Under-stained',
-        action: 'Increase staining time by 2-3 minutes. Check Giemsa working solution concentration and buffered water pH (should be 7.2).'
-      },
-      2: {
-        name: 'Lightly stained',
-        action: 'Increase staining time by 1-2 minutes. Verify Giemsa concentration is accurate and ensure stain solution is freshly prepared.'
-      },
-      3: {
-        name: 'Optimal staining',
-        action: 'No action needed - optimal staining quality for malaria diagnosis.'
-      },
-      4: {
-        name: 'Over-stained',
-        action: 'Decrease staining time by 1-2 minutes. Check for Giemsa precipitates and verify buffered water pH is exactly 7.2.'
-      },
-      5: {
-        name: 'Deeply over-stained',
-        action: 'Decrease staining time by 2-4 minutes. Replace Giemsa working solution and check stock Giemsa quality (perform QC check).'
-      }
+  const getSopChecklist = (grade: number) => {
+    const checklists = {
+      1: [
+        'Verify staining time was sufficient for the dilution method',
+        'Check Giemsa working solution concentration (3% or 10%)',
+        'Confirm buffered water pH = 7.2 ± 0.1',
+        'Verify stock Giemsa quality (perform QC check)',
+        'Ensure methanol fixation was adequate (thin smears)',
+        'Check that stain solution is freshly prepared',
+      ],
+      2: [
+        'Verify staining time was sufficient for the dilution method',
+        'Check Giemsa working solution concentration',
+        'Confirm buffered water pH = 7.2 ± 0.1',
+        'Verify stock Giemsa quality',
+        'Ensure proper fixation',
+      ],
+      3: [
+        'Proceed with malaria parasite examination',
+        'Document staining time and conditions for batch records',
+      ],
+      4: [
+        'Verify staining time (may be too long for dilution method)',
+        'Inspect stain solution for visible precipitates',
+        'Confirm buffered water pH = 7.2 ± 0.1',
+        'Check if working solution concentration is too high',
+        'Verify stock Giemsa quality and expiration date',
+        'Filter stain solution to remove precipitates if present',
+      ],
+      5: [
+        'Verify staining time (likely too long)',
+        'Inspect stain solution for precipitates',
+        'Confirm buffered water pH = 7.2 ± 0.1',
+        'Check working solution concentration',
+        'Replace Giemsa working solution if necessary',
+        'Review methanol fixation protocol',
+      ]
     }
-    return gradeInfo[grade as keyof typeof gradeInfo] || { name: 'Unknown', action: '' }
+    return checklists[grade as keyof typeof checklists] || []
   }
 
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-3xl font-bold mb-2">Single Slide Grading</h1>
-      <p className="text-gray-600 mb-8">Upload a Giemsa-stained slide image to get automated quality grading (AMC Grades I-V)</p>
+      <p className="text-gray-600 mb-8">Upload a Giemsa-stained slide image to get automated quality grading with GradCAM explanation</p>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left Column - Upload */}
@@ -113,14 +129,15 @@ export default function SingleSlidePage() {
 
             {preview && (
               <div className="mb-4">
-                <img src={preview} alt="Preview" className="w-full rounded" />
+                <p className="text-sm font-medium mb-2">Original Image:</p>
+                <img src={preview} alt="Preview" className="w-full rounded border" />
               </div>
             )}
           </div>
 
           {/* Metadata */}
           <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-bold mb-4">Slide Metadata (Optional)</h2>
+            <h2 className="text-xl font-bold mb-4">Slide Metadata</h2>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -132,7 +149,6 @@ export default function SingleSlidePage() {
                 >
                   <option value="10%">10%</option>
                   <option value="3%">3%</option>
-                  <option value="Unknown">Unknown</option>
                 </select>
               </div>
 
@@ -143,21 +159,9 @@ export default function SingleSlidePage() {
                   onChange={(e) => setSmearType(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
-                  <option value="thin">Thin</option>
-                  <option value="thick">Thick</option>
-                  <option value="unknown">Unknown</option>
+                  <option value="Thin">Thin</option>
+                  <option value="Thick">Thick</option>
                 </select>
-              </div>
-
-              <div className="col-span-2">
-                <label className="block text-sm font-medium mb-2">Staining Time (min)</label>
-                <input
-                  type="number"
-                  value={stainTime}
-                  onChange={(e) => setStainTime(parseInt(e.target.value))}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  min="0"
-                />
               </div>
             </div>
           </div>
@@ -178,15 +182,15 @@ export default function SingleSlidePage() {
             {selectedFile && !result && !loading && (
               <button
                 onClick={handleAnalyze}
-                className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors"
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
               >
-                Analyze Slide
+                Analyze Slide with GradCAM
               </button>
             )}
 
             {loading && (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                 <p className="text-gray-600">Analyzing slide...</p>
               </div>
             )}
@@ -216,18 +220,41 @@ export default function SingleSlidePage() {
                   <div className="bg-gray-50 p-4 rounded-lg text-center">
                     <p className="text-sm text-gray-600 mb-1">Status</p>
                     <p className={`text-2xl font-bold ${result.status === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>
-                      {result.status === 'PASS' ? '✅' : '❌'} {result.status}
+                      {result.status === 'PASS' ? '✅' : '❌'}
                     </p>
                   </div>
                 </div>
 
+                {/* GradCAM Visualization */}
+                {result.overlay_image_base64 && (
+                  <div className="mb-6">
+                    <h3 className="font-semibold mb-3">📊 GradCAM Visualization</h3>
+                    <img
+                      src={`data:image/png;base64,${result.overlay_image_base64}`}
+                      alt="GradCAM Overlay"
+                      className="w-full rounded border border-gray-300"
+                    />
+                    <p className="text-xs text-gray-500 mt-2">
+                      Heatmap shows which regions the model focused on for classification
+                    </p>
+                  </div>
+                )}
+
                 <hr className="my-6" />
 
-                {/* Pass/Fail Info */}
+                {/* Explanation */}
+                <div className="mb-6">
+                  <h3 className="font-semibold mb-2">💡 Explanation</h3>
+                  <p className="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
+                    {result.reason}
+                  </p>
+                </div>
+
+                {/* Status Message */}
                 {result.status === 'PASS' ? (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                     <p className="font-semibold text-green-800 mb-2">
-                      Slide Passed: Grade {result.grade_label} with {(result.confidence * 100).toFixed(1)}% confidence
+                      ✅ Slide Passed: Grade {result.grade_label}
                     </p>
                     <p className="text-sm text-green-700">
                       Grade III provides optimal color contrast for accurate malaria parasite identification.
@@ -236,16 +263,31 @@ export default function SingleSlidePage() {
                 ) : (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                     <p className="font-semibold text-red-800 mb-2">
-                      Slide Failed: Grade {result.grade_label} with {(result.confidence * 100).toFixed(1)}% confidence
+                      ❌ Slide Failed: Grade {result.grade_label}
                     </p>
-                    <div className="mt-4">
-                      <p className="font-semibold text-sm mb-2">Failure Diagnosis (AMC Guidelines)</p>
-                      <p className="text-sm text-red-700 mb-2">
-                        <strong>{getGradeInfo(result.grade_numeric).name}</strong>
-                      </p>
-                      <p className="text-sm text-gray-700">
-                        {getGradeInfo(result.grade_numeric).action}
-                      </p>
+                    <p className="text-sm text-red-700 mb-4">
+                      {result.reason}
+                    </p>
+                  </div>
+                )}
+
+                {/* SOP Checklist */}
+                {result.status === 'FAIL' && (
+                  <div className="mb-6">
+                    <h3 className="font-semibold mb-3">📋 Troubleshooting Checklist (AMC MM-SOP-03C)</h3>
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <ul className="space-y-2">
+                        {getSopChecklist(result.grade_numeric).map((item, idx) => (
+                          <li key={idx} className="text-sm flex items-start gap-2">
+                            <span className="text-yellow-600">□</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                        <li className="text-sm flex items-start gap-2 text-red-600 font-medium">
+                          <span>□</span>
+                          <span>Consult supervisor if issue persists</span>
+                        </li>
+                      </ul>
                     </div>
                   </div>
                 )}
@@ -262,7 +304,7 @@ export default function SingleSlidePage() {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
-                            className="bg-primary h-2 rounded-full"
+                            className="bg-blue-600 h-2 rounded-full"
                             style={{ width: `${result.probabilities[idx] * 100}%` }}
                           ></div>
                         </div>
