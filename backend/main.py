@@ -47,7 +47,7 @@ FINDER_CACHE = {}
 TRANSFORM = get_stain_time_val_transforms((512, 512))
 
 
-def load_model(model_path: str = "checkpoints_grade_time/best_model.pth"):
+def load_model(model_path: str = "checkpoints_grade_time_balanced/best_model.pth"):
     """Load and cache the multi-task model (grade + time)"""
     if model_path not in MODEL_CACHE:
         model = create_grade_time_model(
@@ -63,7 +63,7 @@ def load_model(model_path: str = "checkpoints_grade_time/best_model.pth"):
     return MODEL_CACHE[model_path]
 
 
-def load_explainer(model_path: str = "checkpoints_grade_time/best_model.pth", device: str = 'cpu'):
+def load_explainer(model_path: str = "checkpoints_grade_time_balanced/best_model.pth", device: str = 'cpu'):
     """Load and cache the Grad-CAM explainer"""
     cache_key = f"{model_path}_{device}"
     if cache_key not in EXPLAINER_CACHE:
@@ -105,10 +105,11 @@ async def grade_slide(
 
         # Transform and predict
         image_tensor = TRANSFORM(image).unsqueeze(0)
+        current_time_tensor = torch.tensor([stain_time or 0], dtype=torch.float32)
 
         with torch.no_grad():
             # Multi-task model returns (grade_logits, time_deltas)
-            output = model(image_tensor)
+            output = model(image_tensor, current_time_tensor)
 
             # Handle multi-task model
             if isinstance(output, tuple):
