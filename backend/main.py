@@ -9,6 +9,7 @@ Provides API endpoints for the Next.js frontend to communicate with the ML model
 
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import torch
@@ -16,14 +17,17 @@ from PIL import Image
 import io
 import sys
 from pathlib import Path
+import numpy as np
+import base64
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / 'src'))
 
-from models.slide_grade_classifier import create_slide_grade_model
+from models.slide_grade_time_recommender import create_grade_time_model
 from data.stain_time_transforms import get_stain_time_val_transforms
 from evaluation.staining_time_optimizer import StainingTimeOptimizer
+from evaluation.gradcam_explainer import GradeExplainer
 
 app = FastAPI(title="Stain Time Optimization API", version="0.1.0")
 
@@ -38,18 +42,35 @@ app.add_middleware(
 
 # Global model cache
 MODEL_CACHE = {}
+EXPLAINER_CACHE = {}
+FINDER_CACHE = {}
 TRANSFORM = get_stain_time_val_transforms((512, 512))
 
 
-def load_model(model_path: str = "checkpoints_04/best_model.pth"):
-    """Load and cache the model"""
+def load_model(model_path: str = "checkpoints_grade_time/best_model.pth"):
+    """Load and cache the multi-task model (grade + time)"""
     if model_path not in MODEL_CACHE:
-        model = create_slide_grade_model(architecture='resnet18', num_grade_classes=5)
+        model = create_grade_time_model(
+            architecture='resnet18',
+            num_grade_classes=5,
+            pretrained=False,  # Will be loaded from checkpoint
+            use_time_context=True
+        )
         checkpoint = torch.load(model_path, map_location='cpu')
         model.load_state_dict(checkpoint['model_state_dict'])
         model.eval()
         MODEL_CACHE[model_path] = model
     return MODEL_CACHE[model_path]
+
+
+def load_explainer(model_path: str = "checkpoints_grade_time/best_model.pth", device: str = 'cpu'):
+    """Load and cache the Grad-CAM explainer"""
+    cache_key = f"{model_path}_{device}"
+    if cache_key not in EXPLAINER_CACHE:
+        model = load_model(model_path)
+        explainer = GradeExplainer(model, device=device)
+        EXPLAINER_CACHE[cache_key] = explainer
+    return EXPLAINER_CACHE[cache_key]
 
 
 @app.get("/")
@@ -65,7 +86,7 @@ async def grade_slide(
     stain_time: Optional[int] = Form(None)
 ):
     """
-    Grade a single slide image
+    Grade a single slide image (simple grading without time recommendation)
 
     Returns:
         - grade_numeric: Grade as number (1-5)
@@ -86,7 +107,15 @@ async def grade_slide(
         image_tensor = TRANSFORM(image).unsqueeze(0)
 
         with torch.no_grad():
-            logits = model(image_tensor)
+            # Multi-task model returns (grade_logits, time_deltas)
+            output = model(image_tensor)
+
+            # Handle multi-task model
+            if isinstance(output, tuple):
+                logits, _ = output  # Ignore time_deltas for simple grading
+            else:
+                logits = output
+
             probs = torch.softmax(logits, dim=1)
             confidence, prediction = torch.max(probs, dim=1)
 
@@ -161,7 +190,14 @@ async def find_optimal_time(
             image_tensor = TRANSFORM(image).unsqueeze(0)
 
             with torch.no_grad():
-                logits = model(image_tensor)
+                output = model(image_tensor)
+
+                # Handle multi-task model
+                if isinstance(output, tuple):
+                    logits, _ = output  # Ignore time_deltas
+                else:
+                    logits = output
+
                 probs = torch.softmax(logits, dim=1)
 
             # Analyze minute
@@ -194,10 +230,196 @@ async def find_optimal_time(
         return {"error": str(e)}, 500
 
 
+@app.post("/api/explain-grade")
+async def explain_grade(
+    file: UploadFile = File(...),
+    dilution: Optional[str] = Form(None),
+    smear_type: Optional[str] = Form(None),
+    stain_time: Optional[int] = Form(None),
+    return_overlay_base64: bool = Form(True)
+):
+    """
+    Explain slide grade prediction with Grad-CAM visualization
+
+    Returns:
+        - grade_numeric: Grade as number (1-5)
+        - grade_label: Grade as Roman numeral (I-V)
+        - confidence: Confidence score (0-1)
+        - status: PASS or FAIL
+        - reason: Likely failure reason (text explanation)
+        - probabilities: List of probabilities for each grade
+        - overlay_image_base64: Grad-CAM overlay as base64 string (if requested)
+    """
+    try:
+        # Read image
+        image_data = await file.read()
+        image = Image.open(io.BytesIO(image_data)).convert('RGB')
+
+        # Convert to numpy for Grad-CAM
+        image_np = np.array(image)
+
+        # Load explainer
+        explainer = load_explainer(device='cpu')
+
+        # Transform image
+        image_tensor = TRANSFORM(image).unsqueeze(0)
+
+        # Generate explanation
+        explanation = explainer.explain(image_tensor, image_np)
+
+        # Prepare response
+        response = {
+            "grade_numeric": explanation['grade_numeric'],
+            "grade_label": explanation['grade_label'],
+            "confidence": explanation['confidence'],
+            "status": explanation['status'],
+            "reason": explanation['reason'],
+            "probabilities": explanation['probabilities'],
+            "metadata": {
+                "dilution": dilution,
+                "smear_type": smear_type,
+                "stain_time": stain_time
+            }
+        }
+
+        # Add overlay image as base64 if requested
+        if return_overlay_base64:
+            # Convert overlay to base64
+            overlay_pil = Image.fromarray(explanation['overlay_image'])
+            buffer = io.BytesIO()
+            overlay_pil.save(buffer, format='PNG')
+            buffer.seek(0)
+            overlay_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+            response['overlay_image_base64'] = overlay_base64
+
+        return response
+
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
+@app.post("/api/recommend-time")
+async def recommend_time(
+    file: UploadFile = File(...),
+    current_time: float = Form(...),
+    dilution: str = Form(...),
+    smear_type: str = Form(...)
+):
+    """
+    Optimal Time Finder - Predict grade and recommend staining time
+
+    For Tab 2: Recommendation workflow
+    - Takes image + current timestamp
+    - Predicts grade using classification head
+    - Predicts time_delta using time regression head
+    - Returns recommendation message
+
+    Args:
+        file: Slide image
+        current_time: Current staining time in minutes
+        dilution: Dilution method (10% or 3%)
+        smear_type: Smear type (Thin or Thick)
+
+    Returns:
+        - grade_numeric: Predicted grade (1-5)
+        - grade_label: Grade as Roman numeral (I-V)
+        - confidence: Prediction confidence (0-1)
+        - status: OPTIMAL (Grade III) or NOT_OPTIMAL (other grades)
+        - time_delta: Predicted time adjustment in minutes
+        - recommended_time: current_time + time_delta (rounded)
+        - recommendation_message: User-friendly message
+        - reason: Brief explanation
+    """
+    try:
+        # Read image
+        image_data = await file.read()
+        image = Image.open(io.BytesIO(image_data)).convert('RGB')
+
+        # Load model
+        model = load_model()
+
+        # Transform image
+        image_tensor = TRANSFORM(image).unsqueeze(0)
+        current_time_tensor = torch.tensor([current_time], dtype=torch.float32)
+
+        with torch.no_grad():
+            # Multi-task model returns (grade_logits, time_deltas)
+            grade_logits, time_deltas = model(image_tensor, current_time_tensor)
+
+            # Grade prediction
+            probs = torch.softmax(grade_logits, dim=1)
+            confidence, prediction = torch.max(probs, dim=1)
+
+            grade_numeric = prediction.item() + 1  # Convert 0-4 to 1-5
+            grade_label = ['I', 'II', 'III', 'IV', 'V'][prediction.item()]
+            confidence_score = confidence.item()
+
+            # Time recommendation
+            time_delta = time_deltas.item()
+            recommended_time = current_time + time_delta
+
+            # Status: OPTIMAL if Grade III, else NOT_OPTIMAL
+            is_optimal = (grade_numeric == 3)
+            status = "OPTIMAL" if is_optimal else "NOT_OPTIMAL"
+
+            # Generate recommendation message
+            if is_optimal:
+                recommendation_message = (
+                    f"✅ Optimal staining time found! "
+                    f"The slide at {current_time:.0f} minutes shows Grade III (Optimal). "
+                    f"Document this as the optimal staining time for your batch "
+                    f"({dilution} dilution, {smear_type} smear)."
+                )
+                reason = "Slide achieved optimal staining quality (Grade III)."
+            else:
+                # Round to reasonable time range
+                recommended_min = int(recommended_time)
+                recommended_max = recommended_min + 2
+
+                if grade_numeric <= 2:  # Under-stained
+                    recommendation_message = (
+                        f"⏱️ Slide is under-stained (Grade {grade_label}). "
+                        f"Try staining at {recommended_min}-{recommended_max} minutes "
+                        f"(+{time_delta:+.1f} min adjustment from current {current_time:.0f} min)."
+                    )
+                    reason = f"Under-stained. Additional staining time needed to reach Grade III."
+                else:  # Over-stained (Grade IV or V)
+                    recommendation_message = (
+                        f"⏱️ Slide is over-stained (Grade {grade_label}). "
+                        f"Try staining at {recommended_min}-{recommended_max} minutes "
+                        f"({time_delta:+.1f} min adjustment from current {current_time:.0f} min)."
+                    )
+                    reason = f"Over-stained. Reduce staining time to reach Grade III."
+
+            return {
+                "grade_numeric": grade_numeric,
+                "grade_label": grade_label,
+                "confidence": confidence_score,
+                "status": status,
+                "time_delta": round(time_delta, 2),
+                "recommended_time": round(recommended_time, 1),
+                "recommendation_message": recommendation_message,
+                "reason": reason,
+                "probabilities": probs[0].tolist(),
+                "metadata": {
+                    "current_time": current_time,
+                    "dilution": dilution,
+                    "smear_type": smear_type
+                }
+            }
+
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "model_loaded": len(MODEL_CACHE) > 0}
+    return {
+        "status": "healthy",
+        "model_loaded": len(MODEL_CACHE) > 0,
+        "explainer_loaded": len(EXPLAINER_CACHE) > 0
+    }
 
 
 if __name__ == "__main__":
