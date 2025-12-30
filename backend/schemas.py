@@ -59,7 +59,22 @@ class ClimateResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    """Health check response"""
+    """Schema for health check response"""
     status: str
     message: str
     models_loaded: bool
+    data_loaded: bool
+
+
+class ImportationRequest(BaseModel):
+    """Request schema for national importation risk forecasting"""
+    district: str = Field(..., description="District name")
+    year: int = Field(..., ge=2000, le=2100, description="Target year")
+
+
+class ImportationResponse(BaseModel):
+    """Response schema for national importation risk forecasting"""
+    district: str
+    year: int
+    forecasted_national_imported_cases: float
+    district_monthly_importation_pressure: float
