@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / 'src'))
 
-from models.slide_grade_classifier import create_slide_grade_model
+from models.slide_grade_time_recommender import create_grade_time_model
 from data.stain_time_transforms import get_stain_time_val_transforms
 from evaluation.gradcam_explainer import GradeExplainer
 
@@ -21,7 +21,7 @@ def main():
     parser.add_argument('--image', type=str, required=True,
                         help='Path to input image')
     parser.add_argument('--model', type=str,
-                        default='checkpoints/checkpoints_04/best_model.pth',
+                        default='checkpoints_grade_time_balanced/best_model.pth',
                         help='Path to trained model checkpoint')
     parser.add_argument('--output', type=str, default='gradcam_output.png',
                         help='Path to save visualization')
@@ -44,11 +44,16 @@ def main():
     print()
 
     print("Loading model...")
-    model = create_slide_grade_model(architecture='resnet18', num_grade_classes=5)
+    model = create_grade_time_model(
+        architecture='resnet18',
+        num_grade_classes=5,
+        pretrained=False,
+        use_time_context=True
+    )
     checkpoint = torch.load(args.model, map_location=device)
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
-    print("✓ Model loaded")
+    print("✓ Model loaded (dual-head: grade + time)")
 
     print(f"Loading image: {args.image}")
     image_path = Path(args.image)
