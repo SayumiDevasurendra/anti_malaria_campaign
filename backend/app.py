@@ -12,18 +12,30 @@ from .config import (
     TEMPERATURE_MODEL_PATH,
     HUMIDITY_MODEL_PATH,
     CLIMATE_DATA_PATH,
+    IMPORTATION_MODEL_PATH,
+    POPULATION_DATA_PATH,
     API_TITLE,
     API_DESCRIPTION,
     API_VERSION
 )
-from .schemas import ClimateRequest, ClimateResponse, HealthResponse
+from .schemas import (
+    ClimateRequest,
+    ClimateResponse,
+    HistoryRecord,
+    HealthResponse,
+    ImportationRequest,
+    ImportationResponse
+)
 from .services import ClimateForecastService
+from .services_importation import ImportationRiskService
 
 
 # Global variables for models, data, and service
 models = {}
 climate_data = None
+population_data = None
 forecast_service = None
+importation_service = None
 
 
 @asynccontextmanager
@@ -31,7 +43,7 @@ async def lifespan(app: FastAPI):
     """
     Lifespan context manager to load models on startup and cleanup on shutdown
     """
-    global models, forecast_service
+    global models, climate_data, population_data, forecast_service, importation_service
     
     try:
         # Load models on startup
@@ -39,6 +51,7 @@ async def lifespan(app: FastAPI):
         models["rainfall"] = joblib.load(RAINFALL_MODEL_PATH)
         models["temperature"] = joblib.load(TEMPERATURE_MODEL_PATH)
         models["humidity"] = joblib.load(HUMIDITY_MODEL_PATH)
+        models["importation"] = joblib.load(IMPORTATION_MODEL_PATH)
         
         # Load climate data
         print(f"Loading climate data from {CLIMATE_DATA_PATH}...")
@@ -49,6 +62,15 @@ async def lifespan(app: FastAPI):
         else:
             print(f"⚠ Warning: Climate data file not found at {CLIMATE_DATA_PATH}")
             climate_data = None
+            
+        # Load population data
+        print(f"Loading population data from {POPULATION_DATA_PATH}...")
+        if POPULATION_DATA_PATH.exists():
+            population_data = pd.read_csv(POPULATION_DATA_PATH)
+            print(f"✓ Loaded population data for {len(population_data)} districts")
+        else:
+            print(f"⚠ Warning: Population data file not found at {POPULATION_DATA_PATH}")
+            population_data = None
         
         # Initialize forecast service with model dictionaries and global history
         forecast_service = ClimateForecastService(
@@ -56,6 +78,12 @@ async def lifespan(app: FastAPI):
             temp_models=models["temperature"],
             hum_models=models["humidity"],
             global_history=climate_data
+        )
+        
+        # Initialize importation service
+        importation_service = ImportationRiskService(
+            model=models["importation"],
+            population_df=population_data
         )
         
         print("✓ Models loaded successfully!")
@@ -68,7 +96,9 @@ async def lifespan(app: FastAPI):
         # Cleanup on shutdown
         models.clear()
         climate_data = None
+        population_data = None
         forecast_service = None
+        importation_service = None
         print("Models and data unloaded")
 
 
@@ -109,13 +139,13 @@ async def health_check():
     """
     Health check endpoint to verify API and model status
     """
-    models_loaded = all(key in models for key in ["rainfall", "temperature", "humidity"])
+    models_loaded = all(key in models for key in ["rainfall", "temperature", "humidity", "importation"])
     
     return {
         "status": "healthy" if models_loaded else "unhealthy",
         "message": "Models loaded successfully" if models_loaded else "Models not loaded",
         "models_loaded": models_loaded,
-        "data_loaded": climate_data is not None
+        "data_loaded": climate_data is not None and population_data is not None
     }
 
 
@@ -180,6 +210,35 @@ async def forecast_climate_and_risk(request: ClimateRequest):
             status_code=500,
             detail=f"Forecasting error: {str(e)}"
         )
+
+
+@app.post("/forecast/importation", response_model=ImportationResponse, tags=["Forecasting"])
+async def forecast_importation_pressure(request: ImportationRequest):
+    """
+    Forecast district-wise national importation risk
+    """
+    if importation_service is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Service not initialized. Please check server status."
+        )
+        
+    try:
+        result = importation_service.forecast_risk(
+            district=request.district,
+            year=request.year
+        )
+        
+        return ImportationResponse(
+            district=request.district,
+            year=request.year,
+            **result
+        )
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Importation forecast error: {str(e)}")
 
 
 if __name__ == "__main__":
