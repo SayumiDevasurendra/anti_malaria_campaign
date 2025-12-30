@@ -9,8 +9,9 @@ FastAPI backend for forecasting climate variables (rainfall, temperature, humidi
 
 - **Climate Forecasting**: Multi-step time series forecasting for rainfall, temperature, and humidity
 - **Risk Assessment**: Calculate malaria climate receptivity based on forecasted climate conditions
+- **Importation Risk**: Forecast district-wise national importation risk using SARIMA and population data
+- **Automated Data Loading**: Automatically loads historical climate and population data on startup
 - **RESTful API**: Clean, documented API endpoints with automatic OpenAPI documentation
-- **CORS Support**: Ready for frontend integration
 - **Model Management**: Automatic model loading on startup with health checks
 
 ## 🚀 Quick Start
@@ -27,13 +28,19 @@ FastAPI backend for forecasting climate variables (rainfall, temperature, humidi
 pip install -r requirements.txt
 ```
 
-2. Ensure models are in the correct location:
+2. Ensure models and data are in the correct location:
 ```
 models/
   └── models_10/
       ├── rainfall_rf_models.pkl
       ├── temperature_sarima_models.pkl
-      └── humidity_sarima_models.pkl
+      ├── humidity_sarima_models.pkl
+      └── national_importation_sarima_model.pkl
+
+data/
+  └── data_10/
+      ├── climate_data.csv
+      └── population.csv
 ```
 
 ### Running the Server
@@ -81,35 +88,25 @@ Check API and model loading status.
 }
 ```
 
+### Available Districts
+```http
+GET /districts
+```
+Returns a list of all 23 districts available for forecasting.
+
 ### Climate Risk Forecast
 ```http
 POST /forecast/climate-risk
 ```
 
-Forecast climate variables and calculate malaria risk.
+Forecast climate variables and calculate malaria risk. **Historical data is loaded automatically from the server.**
 
-**Request Body:**
+**Request Body (Simplified):**
 ```json
 {
   "district": "Colombo",
-  "year": 2024,
-  "month": 6,
-  "history": [
-    {
-      "date": "2023-01-01",
-      "District": "Colombo",
-      "rainfall": 150.5,
-      "temperature": 28.3,
-      "humidity": 75.2
-    },
-    {
-      "date": "2023-02-01",
-      "District": "Colombo",
-      "rainfall": 120.3,
-      "temperature": 29.1,
-      "humidity": 72.8
-    }
-  ]
+  "year": 2028,
+  "month": 1
 }
 ```
 
@@ -117,12 +114,36 @@ Forecast climate variables and calculate malaria risk.
 ```json
 {
   "district": "Colombo",
-  "year": 2024,
-  "month": 6,
+  "year": 2028,
+  "month": 1,
   "forecasted_rainfall": 145.23,
   "forecasted_temperature": 28.76,
   "forecasted_humidity": 74.15,
   "forecasted_climatic_receptivity": 1.5
+}
+```
+
+### National Importation Risk
+```http
+POST /forecast/importation
+```
+Forecast district-wise monthly national importation risk.
+
+**Request Body:**
+```json
+{
+  "district": "Colombo",
+  "year": 2028
+}
+```
+
+**Response:**
+```json
+{
+  "district": "Colombo",
+  "year": 2028,
+  "forecasted_national_imported_cases": 125.5,
+  "district_monthly_importation_pressure": 1.25
 }
 ```
 
@@ -144,7 +165,8 @@ backend/
 ├── app.py              # FastAPI application and endpoints
 ├── config.py           # Configuration settings
 ├── schemas.py          # Pydantic models for validation
-└── services.py         # Forecasting business logic
+├── services.py         # Climate forecasting logic
+└── services_importation.py # Importation risk logic
 ```
 
 ## 🧪 Testing the API
@@ -156,21 +178,13 @@ backend/
 curl http://localhost:8000/health
 
 # Forecast request
+# Forecast request
 curl -X POST http://localhost:8000/forecast/climate-risk \
   -H "Content-Type: application/json" \
   -d '{
     "district": "Colombo",
     "year": 2024,
-    "month": 6,
-    "history": [
-      {
-        "date": "2023-01-01",
-        "District": "Colombo",
-        "rainfall": 150.5,
-        "temperature": 28.3,
-        "humidity": 75.2
-      }
-    ]
+    "month": 6
   }'
 ```
 
@@ -180,19 +194,11 @@ curl -X POST http://localhost:8000/forecast/climate-risk \
 import requests
 
 url = "http://localhost:8000/forecast/climate-risk"
+url = "http://localhost:8000/forecast/climate-risk"
 data = {
     "district": "Colombo",
     "year": 2024,
-    "month": 6,
-    "history": [
-        {
-            "date": "2023-01-01",
-            "District": "Colombo",
-            "rainfall": 150.5,
-            "temperature": 28.3,
-            "humidity": 75.2
-        }
-    ]
+    "month": 6
 }
 
 response = requests.post(url, json=data)
