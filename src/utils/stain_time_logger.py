@@ -41,12 +41,18 @@ def setup_stain_time_logger(
         log_path = Path(log_dir)
         log_path.mkdir(parents=True, exist_ok=True)
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        log_file = log_path / f"{name}_{timestamp}.log"
+        # Create one log file per day (append mode)
+        date_stamp = datetime.now().strftime("%Y%m%d")
+        log_file = log_path / f"{name}_{date_stamp}.log"
 
-        file_handler = logging.FileHandler(log_file)
+        file_handler = logging.FileHandler(log_file, mode='a')  # Append mode
         file_handler.setLevel(getattr(logging, level.upper()))
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
+
+        # Log separator for each run
+        logger.info("=" * 80)
+        logger.info(f"NEW RUN STARTED AT {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info("=" * 80)
 
     return logger

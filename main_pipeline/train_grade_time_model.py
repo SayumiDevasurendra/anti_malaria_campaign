@@ -32,6 +32,8 @@ from src.utils.class_balance_utils import (
     calculate_class_weights,
     create_joint_weighted_sampler
 )
+from src.utils.stain_time_logger import setup_stain_time_logger
+from src.utils.stain_time_seed import set_stain_time_seed
 
 
 class MultiTaskLoss(nn.Module):
@@ -251,27 +253,36 @@ def train_model(
         device: Device to train on
         seed: Random seed
     """
-    # Set random seeds
-    torch.manual_seed(seed)
-    np.random.seed(seed)
+    # Setup logger
+    logger = setup_stain_time_logger(
+        name="AMC_Training",
+        log_dir="logs/logs_04",
+        level="INFO",
+        console_output=True,
+        file_output=True
+    )
+
+    # Set random seeds for reproducibility
+    set_stain_time_seed(seed=seed, deterministic=True)
+    logger.info(f"Random seed set to {seed} (deterministic mode enabled)")
 
     # Create checkpoint directory
     checkpoint_dir = Path(checkpoint_dir)
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"{'='*60}")
-    print(f"Training Multi-Task Model: Grade + Time Recommendation")
-    print(f"{'='*60}")
-    print(f"Architecture: {architecture}")
-    print(f"Image size: {img_size}")
-    print(f"Batch size: {batch_size}")
-    print(f"Learning rate: {lr}")
-    print(f"Loss weights: {grade_weight:.2f} (grade) + {time_weight:.2f} (time)")
-    print(f"Device: {device}")
-    print(f"{'='*60}\n")
+    logger.info("="*60)
+    logger.info("Training Multi-Task Model: Grade + Time Recommendation")
+    logger.info("="*60)
+    logger.info(f"Architecture: {architecture}")
+    logger.info(f"Image size: {img_size}")
+    logger.info(f"Batch size: {batch_size}")
+    logger.info(f"Learning rate: {lr}")
+    logger.info(f"Loss weights: {grade_weight:.2f} (grade) + {time_weight:.2f} (time)")
+    logger.info(f"Device: {device}")
+    logger.info("="*60)
 
     # Create datasets
-    print("Loading datasets...")
+    logger.info("Loading datasets...")
     train_transform = get_stain_time_train_transforms(img_size=img_size)
     val_transform = get_stain_time_val_transforms(img_size=img_size)
 
@@ -287,28 +298,28 @@ def train_model(
         return_metadata=False
     )
 
-    print(f"  Train: {len(train_dataset)} images")
-    print(f"  Val: {len(val_dataset)} images\n")
+    logger.info(f"  Train: {len(train_dataset)} images")
+    logger.info(f"  Val: {len(val_dataset)} images")
 
     # Class balancing setup
-    print("Setting up class balancing...")
+    logger.info("Setting up class balancing...")
 
     # 1. Calculate class weights for loss function
     if use_class_weights:
         train_labels = train_dataset.df['grade_numeric'].values - 1  # Convert to 0-indexed
         class_weights_tensor = calculate_class_weights(train_labels, num_classes=5, method='inverse')
         class_weights_tensor = class_weights_tensor.to(device)
-        print(f"  ✓ Class weights calculated:")
+        logger.info("  ✓ Class weights calculated:")
         for i in range(5):
             if class_weights_tensor[i] > 0:
-                print(f"      Grade {i+1}: {class_weights_tensor[i]:.4f}")
+                logger.info(f"      Grade {i+1}: {class_weights_tensor[i]:.4f}")
     else:
         class_weights_tensor = None
-        print(f"  ✗ Class weights disabled")
+        logger.info("  ✗ Class weights disabled")
 
     # 2. Create sampler
     if use_joint_sampler:
-        print(f"  ✓ Using joint weighted sampler (grade + dilution + time_delta)")
+        logger.info("  ✓ Using joint weighted sampler (grade + dilution + time_delta)")
         weighted_sampler = create_joint_weighted_sampler(
             df=train_dataset.df,
             grade_weight=0.5,
@@ -317,7 +328,7 @@ def train_model(
             method='inverse'
         )
     else:
-        print(f"  ✓ Using simple grade-based weighted sampler")
+        logger.info("  ✓ Using simple grade-based weighted sampler")
         from torch.utils.data import WeightedRandomSampler
         sample_weights = train_dataset.get_sample_weights()
         weighted_sampler = WeightedRandomSampler(
@@ -346,7 +357,7 @@ def train_model(
     )
 
     # Create model
-    print("Creating model...")
+    logger.info("Creating model...")
     model = create_grade_time_model(
         architecture=architecture,
         num_grade_classes=5,
@@ -354,7 +365,7 @@ def train_model(
         use_time_context=True
     )
     model = model.to(device)
-    print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}\n")
+    logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
 
     # Create loss and optimizer
     criterion = MultiTaskLoss(
@@ -374,8 +385,8 @@ def train_model(
     history = []
 
     for epoch in range(1, num_epochs + 1):
-        print(f"\nEpoch {epoch}/{num_epochs}")
-        print(f"{'-'*60}")
+        logger.info(f"\nEpoch {epoch}/{num_epochs}")
+        logger.info("-"*60)
 
         # Train
         train_metrics = train_epoch(model, train_loader, criterion, optimizer, device, epoch)
@@ -387,9 +398,9 @@ def train_model(
         scheduler.step(val_metrics['loss'])
 
         # Print epoch summary
-        print(f"\nEpoch {epoch} Summary:")
-        print(f"  Train Loss: {train_metrics['loss']:.4f} | Grade Acc: {train_metrics['grade_accuracy']:.3f}")
-        print(f"  Val Loss: {val_metrics['loss']:.4f} | Grade Acc: {val_metrics['grade_accuracy']:.3f} | Time MAE: {val_metrics['time_mae']:.2f} min")
+        logger.info(f"\nEpoch {epoch} Summary:")
+        logger.info(f"  Train Loss: {train_metrics['loss']:.4f} | Grade Acc: {train_metrics['grade_accuracy']:.3f}")
+        logger.info(f"  Val Loss: {val_metrics['loss']:.4f} | Grade Acc: {val_metrics['grade_accuracy']:.3f} | Time MAE: {val_metrics['time_mae']:.2f} min")
 
         # Save history
         history.append({
@@ -415,7 +426,7 @@ def train_model(
                 'architecture': architecture,
                 'img_size': img_size
             }, checkpoint_path)
-            print(f"  ✓ Saved best model (val_loss: {val_metrics['loss']:.4f})")
+            logger.info(f"  ✓ Saved best model (val_loss: {val_metrics['loss']:.4f})")
 
         # Save checkpoint every 10 epochs
         if epoch % 10 == 0:
@@ -430,11 +441,11 @@ def train_model(
     history_df = pd.DataFrame(history)
     history_df.to_csv(checkpoint_dir / 'training_history.csv', index=False)
 
-    print(f"\n{'='*60}")
-    print(f"Training complete!")
-    print(f"Best validation loss: {best_val_loss:.4f}")
-    print(f"Checkpoints saved to: {checkpoint_dir}")
-    print(f"{'='*60}")
+    logger.info(f"\n{'='*60}")
+    logger.info(f"Training complete!")
+    logger.info(f"Best validation loss: {best_val_loss:.4f}")
+    logger.info(f"Checkpoints saved to: {checkpoint_dir}")
+    logger.info(f"{'='*60}")
 
 
 def main():
