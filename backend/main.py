@@ -1,10 +1,5 @@
 """
-FastAPI Backend for Stain Time Optimization System
-
 Provides API endpoints for the Next.js frontend to communicate with the ML models.
-
-@author: Sayumi Devasurendra
-@version: 0.1.0
 """
 
 from fastapi import FastAPI, File, UploadFile, Form
@@ -85,16 +80,7 @@ async def grade_slide(
     smear_type: Optional[str] = Form(None),
     stain_time: Optional[int] = Form(None)
 ):
-    """
-    Grade a single slide image (simple grading without time recommendation)
-
-    Returns:
-        - grade_numeric: Grade as number (1-5)
-        - grade_label: Grade as Roman numeral (I-V)
-        - confidence: Confidence score (0-1)
-        - status: PASS or FAIL
-        - probabilities: List of probabilities for each grade
-    """
+    """Simple grading without time recommendation"""
     try:
         # Read image
         image_data = await file.read()
@@ -150,18 +136,7 @@ async def find_optimal_time(
     dilution: str = Form(...),
     confidence_threshold: float = Form(0.8)
 ):
-    """
-    Analyze minute-by-minute sweep to find optimal staining time
-
-    Returns:
-        - status: success or failure
-        - optimal_minute: Optimal minute (if found)
-        - pass_probability: Pass probability at optimal minute
-        - mean_grade: Mean grade at optimal minute
-        - message: Status message
-        - passing_minutes: List of all passing minutes
-        - minute_analyses: Detailed analysis for each minute
-    """
+    """Batch analysis: minute-by-minute sweep for optimal staining time"""
     try:
         # Load model
         model = load_model()
@@ -239,18 +214,7 @@ async def explain_grade(
     stain_time: Optional[int] = Form(None),
     return_overlay_base64: bool = Form(True)
 ):
-    """
-    Explain slide grade prediction with Grad-CAM visualization
-
-    Returns:
-        - grade_numeric: Grade as number (1-5)
-        - grade_label: Grade as Roman numeral (I-V)
-        - confidence: Confidence score (0-1)
-        - status: PASS or FAIL
-        - reason: Likely failure reason (text explanation)
-        - probabilities: List of probabilities for each grade
-        - overlay_image_base64: Grad-CAM overlay as base64 string (if requested)
-    """
+    """Tab 1: Diagnostic with Grad-CAM explanation"""
     try:
         # Read image
         image_data = await file.read()
@@ -306,31 +270,7 @@ async def recommend_time(
     dilution: str = Form(...),
     smear_type: str = Form(...)
 ):
-    """
-    Optimal Time Finder - Predict grade and recommend staining time
-
-    For Tab 2: Recommendation workflow
-    - Takes image + current timestamp
-    - Predicts grade using classification head
-    - Predicts time_delta using time regression head
-    - Returns recommendation message
-
-    Args:
-        file: Slide image
-        current_time: Current staining time in minutes
-        dilution: Dilution method (10% or 3%)
-        smear_type: Smear type (Thin or Thick)
-
-    Returns:
-        - grade_numeric: Predicted grade (1-5)
-        - grade_label: Grade as Roman numeral (I-V)
-        - confidence: Prediction confidence (0-1)
-        - status: OPTIMAL (Grade III) or NOT_OPTIMAL (other grades)
-        - time_delta: Predicted time adjustment in minutes
-        - recommended_time: current_time + time_delta (rounded)
-        - recommendation_message: User-friendly message
-        - reason: Brief explanation
-    """
+    """Tab 2: Optimal time finder with time recommendations"""
     try:
         # Read image
         image_data = await file.read()
@@ -415,7 +355,7 @@ async def recommend_time(
 
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint"""
+    """Health check"""
     return {
         "status": "healthy",
         "model_loaded": len(MODEL_CACHE) > 0,
