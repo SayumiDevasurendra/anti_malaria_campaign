@@ -15,6 +15,10 @@ HUMIDITY_MODEL_PATH = MODELS_DIR / "humidity_sarima_models.pkl"
 
 # Data paths
 CLIMATE_DATA_PATH = BASE_DIR / "data" / "data_10" / "climate_data.csv"
+POPULATION_DATA_PATH = BASE_DIR / "data" / "data_10" / "population.csv"
+
+# Importation Model Path
+IMPORTATION_MODEL_PATH = MODELS_DIR / "national_importation_sarima_model.pkl"
 
 # Forecasting parameters
 LAGS = list(range(5))  # Use last 5 months for lag features (Model expects 7 features: 2 cyclical + 5 lags)
