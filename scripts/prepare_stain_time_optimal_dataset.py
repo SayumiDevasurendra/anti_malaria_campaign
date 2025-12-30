@@ -7,47 +7,104 @@ import argparse
 from typing import Optional
 
 
-def find_optimal_time_both_smears(batch_df: pd.DataFrame, verbose: bool = False) -> Optional[int]:
-    """Find earliest time where both thin and thick smears reach Grade 3"""
+def find_optimal_time_both_smears(batch_df: pd.DataFrame, dilution: str, verbose: bool = False) -> Optional[int]:
+    """
+    Logic:
+    1. First priority: Find earliest timestamp where BOTH thin AND thick have Grade 3 at the same time
+    2. Second priority (fallback): If no such timestamp exists, find earliest timestamp where
+       at least one smear type has Grade 3 (when the other smear type doesn't have Grade 3 anywhere)
+    3. Apply rounding for 3% dilution to ensure times are in expected range (30-45 min)
+    """
+    # First, identify which smear types have Grade 3 anywhere in the batch
+    thin_df = batch_df[batch_df['smear_type'] == 'thin']
+    thick_df = batch_df[batch_df['smear_type'] == 'thick']
+
+    batch_has_thin = len(thin_df) > 0
+    batch_has_thick = len(thick_df) > 0
+
+    thin_has_grade3_anywhere = (thin_df['grade_numeric'] == 3).any() if batch_has_thin else False
+    thick_has_grade3_anywhere = (thick_df['grade_numeric'] == 3).any() if batch_has_thick else False
+
+    if verbose:
+        print(f"      Batch summary:")
+        print(f"        Has thin smears: {batch_has_thin}, thin has Grade 3: {thin_has_grade3_anywhere}")
+        print(f"        Has thick smears: {batch_has_thick}, thick has Grade 3: {thick_has_grade3_anywhere}")
+
+    # Group by time to find candidates
     time_groups = batch_df.groupby('time_minutes')
 
-    optimal_candidates = []
+    # Priority 1: Find timestamps where BOTH thin AND thick have Grade 3 simultaneously
+    both_smears_optimal_candidates = []
+
+    # Priority 2: Find timestamps where at least one smear has Grade 3 (fallback)
+    single_smear_optimal_candidates = []
 
     for time, time_df in time_groups:
-        smear_types = time_df['smear_type'].unique()
+        smear_types_at_time = time_df['smear_type'].unique()
 
         grades_by_smear = {}
-        for smear in smear_types:
+        for smear in smear_types_at_time:
             smear_grades = time_df[time_df['smear_type'] == smear]['grade_numeric'].values
             grades_by_smear[smear] = smear_grades
 
-        is_optimal = False
+        thin_is_grade3_at_time = 3 in grades_by_smear.get('thin', [])
+        thick_is_grade3_at_time = 3 in grades_by_smear.get('thick', [])
 
-        if len(smear_types) == 2:
-            thin_has_grade3 = 3 in grades_by_smear.get('thin', [])
-            thick_has_grade3 = 3 in grades_by_smear.get('thick', [])
+        # Check if BOTH thin and thick are Grade 3 at this timestamp
+        if thin_is_grade3_at_time and thick_is_grade3_at_time:
+            both_smears_optimal_candidates.append(time)
+            if verbose:
+                print(f"      {time} min: thin=3 [OK], thick=3 [OK] -> BOTH OPTIMAL")
 
-            if thin_has_grade3 and thick_has_grade3:
-                is_optimal = True
-                if verbose:
-                    print(f"      {time} min: thin=3 [OK], thick=3 [OK] -> OPTIMAL")
-        elif len(smear_types) == 1:
-            smear = smear_types[0]
-            if 3 in grades_by_smear[smear]:
-                is_optimal = True
-                if verbose:
-                    print(f"      {time} min: {smear}=3 [OK] (only smear type) -> OPTIMAL")
-
-        if is_optimal:
-            optimal_candidates.append(time)
+        # Check if at least one smear is Grade 3 at this timestamp (for fallback)
+        elif thin_is_grade3_at_time or thick_is_grade3_at_time:
+            single_smear_optimal_candidates.append(time)
+            if verbose:
+                smear_status = []
+                if thin_is_grade3_at_time:
+                    smear_status.append("thin=3 [OK]")
+                if thick_is_grade3_at_time:
+                    smear_status.append("thick=3 [OK]")
+                print(f"      {time} min: {', '.join(smear_status)} -> SINGLE OPTIMAL (fallback)")
         elif verbose:
             grade_str = ', '.join([f"{s}={list(g)}" for s, g in grades_by_smear.items()])
             print(f"      {time} min: {grade_str}")
 
-    if len(optimal_candidates) == 0:
-        return None
+    # Decision logic:
+    # If both thin and thick have Grade 3 somewhere in the batch, we MUST find a timestamp where both are Grade 3
+    # Otherwise, use the fallback (single smear)
+    optimal_time = None
 
-    return min(optimal_candidates)
+    if thin_has_grade3_anywhere and thick_has_grade3_anywhere:
+        # Both smear types have Grade 3 somewhere - find where they BOTH have it at the same time
+        if both_smears_optimal_candidates:
+            optimal_time = min(both_smears_optimal_candidates)
+            if verbose:
+                print(f"      [OK] Both smears have Grade 3 in batch, using earliest timestamp where BOTH are Grade 3: {optimal_time} min")
+        else:
+            # This shouldn't happen in a well-formed dataset, but handle it
+            if verbose:
+                print(f"      [!] WARNING: Both smears have Grade 3 somewhere, but not at the same timestamp")
+            # Still use fallback
+            if single_smear_optimal_candidates:
+                optimal_time = min(single_smear_optimal_candidates)
+                if verbose:
+                    print(f"      [FALLBACK] Using earliest timestamp with at least one Grade 3: {optimal_time} min")
+    else:
+        # Only one smear type has Grade 3 (or batch only has one smear type) - use fallback
+        if single_smear_optimal_candidates:
+            optimal_time = min(single_smear_optimal_candidates)
+            if verbose:
+                print(f"      [FALLBACK] Only one smear type has Grade 3, using earliest: {optimal_time} min")
+
+    # Apply rounding for 3% dilution to ensure times are in expected range (30-45 min)
+    if optimal_time is not None and dilution == '3%':
+        if optimal_time < 30:
+            if verbose:
+                print(f"      [ROUNDING] 3% dilution optimal time {optimal_time} min < 30, rounding to 30 min")
+            optimal_time = 30
+
+    return optimal_time
 
 
 def prepare_optimal_time_dataset(
@@ -78,18 +135,17 @@ def prepare_optimal_time_dataset(
     optimal_times = {}
     batch_stats = []
 
-    for batch_id, batch_df in df.groupby('batch_id'):
+    for (batch_id, dilution), batch_df in df.groupby(['batch_id', 'dilution']):
         batch_df = batch_df.sort_values('time_minutes')
 
-        dilution = batch_df['dilution'].iloc[0]
         time_range = f"{batch_df['time_minutes'].min()}-{batch_df['time_minutes'].max()}"
         smear_types = sorted(batch_df['smear_type'].unique())
 
         print(f"{batch_id} ({dilution}, {len(batch_df)} images, {time_range} min, smears: {smear_types})")
 
-        optimal_time = find_optimal_time_both_smears(batch_df, verbose=verbose)
+        optimal_time = find_optimal_time_both_smears(batch_df, dilution=dilution, verbose=verbose)
 
-        optimal_times[batch_id] = optimal_time
+        optimal_times[(batch_id, dilution)] = optimal_time
 
         stats = {
             'batch_id': batch_id,
@@ -112,7 +168,7 @@ def prepare_optimal_time_dataset(
                 print(f"        {time} min ({smear}): {grades}")
             print()
 
-    df['optimal_time'] = df['batch_id'].map(optimal_times)
+    df['optimal_time'] = df.apply(lambda row: optimal_times.get((row['batch_id'], row['dilution'])), axis=1)
     df['time_delta'] = df['optimal_time'] - df['time_minutes']
 
     df_with_optimal = df[df['optimal_time'].notna()].copy()
