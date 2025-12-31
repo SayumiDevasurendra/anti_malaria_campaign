@@ -1,0 +1,83 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Data
+data/data_04/raw/*
+!data/data_04/raw/.gitkeep
+data/data_04/processed/*
+!data/data_04/processed/.gitkeep
+data/data_04/splits/*
+!data/data_04/splits/.gitkeep
+data/data_04/annotations/*
+!data/data_04/annotations/.gitkeep
+data/data_04/unlabeled/*
+!data/data_04/unlabeled/.gitkeep
+
+# Models & Checkpoints
+models/models_04/*.pth
+models/models_04/*.pt
+checkpoints/checkpoints_04/*
+!checkpoints/checkpoints_04/.gitkeep
+
+# Logs
+logs/logs_04/*
+!logs/logs_04/.gitkeep
+*.log
+
+# Results
+results/results_04/figures/*
+!results/results_04/figures/.gitkeep
+results/results_04/reports/*
+!results/results_04/reports/.gitkeep
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tensorboard
+runs/runs_04/
+
+# Weights & Biases
+wandb/
+
+#documents
+docs/*
+!docs/.gitkeep
