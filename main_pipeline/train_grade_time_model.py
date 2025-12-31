@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
+from torch.utils.tensorboard import SummaryWriter
 from pathlib import Path
 import sys
 import argparse
@@ -90,7 +91,7 @@ class MultiTaskLoss(nn.Module):
         return total_loss, grade_loss, time_loss
 
 
-def train_epoch(model, dataloader, criterion, optimizer, device, epoch):
+def train_epoch(model, dataloader, criterion, optimizer, device, epoch, writer=None):
     """Train for one epoch"""
     model.train()
 
@@ -145,6 +146,13 @@ def train_epoch(model, dataloader, criterion, optimizer, device, epoch):
     avg_time_loss = total_time_loss / total_samples
     grade_acc = correct_grades / total_samples
 
+    # Log to TensorBoard
+    if writer is not None:
+        writer.add_scalar('Loss/train', avg_loss, epoch)
+        writer.add_scalar('Loss/train_grade', avg_grade_loss, epoch)
+        writer.add_scalar('Loss/train_time', avg_time_loss, epoch)
+        writer.add_scalar('Accuracy/train_grade', grade_acc, epoch)
+
     return {
         'loss': avg_loss,
         'grade_loss': avg_grade_loss,
@@ -154,7 +162,7 @@ def train_epoch(model, dataloader, criterion, optimizer, device, epoch):
 
 
 @torch.no_grad()
-def validate_epoch(model, dataloader, criterion, device, epoch):
+def validate_epoch(model, dataloader, criterion, device, epoch, writer=None):
     """Validate for one epoch"""
     model.eval()
 
@@ -209,6 +217,14 @@ def validate_epoch(model, dataloader, criterion, device, epoch):
     grade_acc = correct_grades / total_samples
     time_mae = np.mean(time_errors)
 
+    # Log to TensorBoard
+    if writer is not None:
+        writer.add_scalar('Loss/val', avg_loss, epoch)
+        writer.add_scalar('Loss/val_grade', avg_grade_loss, epoch)
+        writer.add_scalar('Loss/val_time', avg_time_loss, epoch)
+        writer.add_scalar('Accuracy/val_grade', grade_acc, epoch)
+        writer.add_scalar('MAE/val_time', time_mae, epoch)
+
     return {
         'loss': avg_loss,
         'grade_loss': avg_grade_loss,
@@ -222,6 +238,7 @@ def train_model(
     train_csv: str,
     val_csv: str,
     checkpoint_dir: str = 'checkpoints_grade_time',
+    tensorboard_dir: str = 'runs/runs_04',
     architecture: str = 'resnet18',
     img_size: tuple = (512, 512),
     batch_size: int = 16,
@@ -270,6 +287,11 @@ def train_model(
     checkpoint_dir = Path(checkpoint_dir)
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
+    # Initialize TensorBoard writer
+    tensorboard_dir = Path(tensorboard_dir)
+    tensorboard_dir.mkdir(parents=True, exist_ok=True)
+    writer = SummaryWriter(log_dir=str(tensorboard_dir))
+
     logger.info("="*60)
     logger.info("Training Multi-Task Model: Grade + Time Recommendation")
     logger.info("="*60)
@@ -279,6 +301,7 @@ def train_model(
     logger.info(f"Learning rate: {lr}")
     logger.info(f"Loss weights: {grade_weight:.2f} (grade) + {time_weight:.2f} (time)")
     logger.info(f"Device: {device}")
+    logger.info(f"TensorBoard: {tensorboard_dir}")
     logger.info("="*60)
 
     # Create datasets
@@ -389,13 +412,18 @@ def train_model(
         logger.info("-"*60)
 
         # Train
-        train_metrics = train_epoch(model, train_loader, criterion, optimizer, device, epoch)
+        train_metrics = train_epoch(model, train_loader, criterion, optimizer, device, epoch, writer)
 
         # Validate
-        val_metrics = validate_epoch(model, val_loader, criterion, device, epoch)
+        val_metrics = validate_epoch(model, val_loader, criterion, device, epoch, writer)
 
         # Scheduler step
         scheduler.step(val_metrics['loss'])
+
+        # Log learning rate to TensorBoard
+        if writer is not None:
+            current_lr = optimizer.param_groups[0]['lr']
+            writer.add_scalar('LearningRate', current_lr, epoch)
 
         # Print epoch summary
         logger.info(f"\nEpoch {epoch} Summary:")
@@ -441,6 +469,11 @@ def train_model(
     history_df = pd.DataFrame(history)
     history_df.to_csv(checkpoint_dir / 'training_history.csv', index=False)
 
+    # Close TensorBoard writer
+    if writer is not None:
+        writer.close()
+        logger.info(f"TensorBoard logs saved to: {tensorboard_dir}")
+
     logger.info(f"\n{'='*60}")
     logger.info(f"Training complete!")
     logger.info(f"Best validation loss: {best_val_loss:.4f}")
@@ -453,6 +486,7 @@ def main():
     parser.add_argument('--train-csv', type=str, required=True, help='Path to training CSV (train_optimal.csv)')
     parser.add_argument('--val-csv', type=str, required=True, help='Path to validation CSV (val_optimal.csv)')
     parser.add_argument('--checkpoint-dir', type=str, default='checkpoints_grade_time', help='Checkpoint directory')
+    parser.add_argument('--tensorboard-dir', type=str, default='runs/runs_04', help='TensorBoard log directory')
     parser.add_argument('--architecture', type=str, default='resnet18', choices=['resnet18', 'resnet50', 'efficientnet_b0'])
     parser.add_argument('--img-size', type=int, default=512, help='Input image size')
     parser.add_argument('--batch-size', type=int, default=16, help='Batch size')
@@ -471,6 +505,7 @@ def main():
         train_csv=args.train_csv,
         val_csv=args.val_csv,
         checkpoint_dir=args.checkpoint_dir,
+        tensorboard_dir=args.tensorboard_dir,
         architecture=args.architecture,
         img_size=(args.img_size, args.img_size),
         batch_size=args.batch_size,

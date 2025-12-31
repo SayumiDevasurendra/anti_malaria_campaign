@@ -12,6 +12,7 @@
 TRAIN_CSV="data/data_04/splits/train_optimal.csv"
 VAL_CSV="data/data_04/splits/val_optimal.csv"
 CHECKPOINT_DIR="checkpoints_grade_time_balanced"
+TENSORBOARD_DIR="runs/runs_04"
 
 # Training parameters
 ARCHITECTURE="resnet18"
@@ -54,6 +55,7 @@ python main_pipeline/train_grade_time_model.py \
     --train-csv "$TRAIN_CSV" \
     --val-csv "$VAL_CSV" \
     --checkpoint-dir "$CHECKPOINT_DIR" \
+    --tensorboard-dir "$TENSORBOARD_DIR" \
     --architecture "$ARCHITECTURE" \
     --img-size "$IMG_SIZE" \
     --batch-size "$BATCH_SIZE" \
