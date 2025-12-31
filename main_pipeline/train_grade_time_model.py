@@ -306,8 +306,8 @@ def train_model(
 
     # Create datasets
     logger.info("Loading datasets...")
-    train_transform = get_stain_time_train_transforms(img_size=img_size)
-    val_transform = get_stain_time_val_transforms(img_size=img_size)
+    train_transform = get_stain_time_train_transforms(image_size=img_size)
+    val_transform = get_stain_time_val_transforms(image_size=img_size)
 
     train_dataset = StainTimeOptimalDataset(
         csv_path=train_csv,
