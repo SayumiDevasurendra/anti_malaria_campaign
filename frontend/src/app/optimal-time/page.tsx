@@ -35,11 +35,12 @@ export default function OptimalTimePage() {
   const [result, setResult] = useState<TimeRecommendation | null>(null)
   const [error, setError] = useState<string>('')
   const [attemptHistory, setAttemptHistory] = useState<AttemptHistory[]>([])
+  const [validationError, setValidationError] = useState<string>('')
 
   // Form inputs
   const [dilution, setDilution] = useState('10%')
   const [smearType, setSmearType] = useState('Thin')
-  const [currentTime, setCurrentTime] = useState<number>(6)
+  const [currentTime, setCurrentTime] = useState<number>(5)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -51,11 +52,32 @@ export default function OptimalTimePage() {
     }
   }
 
+  const validateStainTime = (time: number, dilutionMethod: string): string => {
+    if (dilutionMethod === '10%') {
+      if (time < 5 || time > 20) {
+        return 'For 10% dilution, please enter a value between 5-20 minutes'
+      }
+    } else if (dilutionMethod === '3%') {
+      if (time < 30 || time > 45) {
+        return 'For 3% dilution, please enter a value between 30-45 minutes'
+      }
+    }
+    return ''
+  }
+
   const handleAnalyze = async () => {
     if (!selectedFile || !currentTime) return
 
+    // Validate stain time
+    const error = validateStainTime(currentTime, dilution)
+    if (error) {
+      setValidationError(error)
+      return
+    }
+
     setLoading(true)
     setError('')
+    setValidationError('')
 
     try {
       const formData = new FormData()
@@ -95,8 +117,9 @@ export default function OptimalTimePage() {
     setPreview('')
     setResult(null)
     setError('')
+    setValidationError('')
     setAttemptHistory([])
-    setCurrentTime(dilution === '10%' ? 6 : 30)
+    setCurrentTime(dilution === '10%' ? 5 : 30)
   }
 
   const handleTryAgain = () => {
@@ -128,7 +151,8 @@ export default function OptimalTimePage() {
                   value={dilution}
                   onChange={(e) => {
                     setDilution(e.target.value)
-                    setCurrentTime(e.target.value === '10%' ? 6 : 30)
+                    setCurrentTime(e.target.value === '10%' ? 5 : 30)
+                    setValidationError('')
                   }}
                   className="w-full px-3 py-2 border rounded-lg"
                   disabled={attemptHistory.length > 0}
@@ -159,14 +183,23 @@ export default function OptimalTimePage() {
               <input
                 type="number"
                 value={currentTime}
-                onChange={(e) => setCurrentTime(parseFloat(e.target.value))}
-                className="w-full px-3 py-2 border rounded-lg text-lg font-semibold"
+                onChange={(e) => {
+                  setCurrentTime(parseFloat(e.target.value))
+                  setValidationError('')
+                }}
+                className="w-full px-3 py-2 border rounded-lg"
                 min="1"
                 step="0.5"
+                placeholder={dilution === '10%' ? '5' : '30'}
               />
               <p className="text-xs text-gray-500 mt-1">
                 Time at which the slide was stained
               </p>
+              {validationError && (
+                <p className="text-xs text-red-600 mt-1 font-medium">
+                  {validationError}
+                </p>
+              )}
             </div>
           </div>
 

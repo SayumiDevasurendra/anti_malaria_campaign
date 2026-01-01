@@ -24,7 +24,8 @@ export default function SingleSlidePage() {
   // Form metadata
   const [dilution, setDilution] = useState('10%')
   const [smearType, setSmearType] = useState('Thin')
-  const [stainTime, setStainTime] = useState<string>('')
+  const [stainTime, setStainTime] = useState<number>(5)
+  const [validationError, setValidationError] = useState<string>('')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -36,18 +37,39 @@ export default function SingleSlidePage() {
     }
   }
 
+  const validateStainTime = (time: number, dilutionMethod: string): string => {
+    if (dilutionMethod === '10%') {
+      if (time < 5 || time > 20) {
+        return 'For 10% dilution, please enter a value between 5-20 minutes'
+      }
+    } else if (dilutionMethod === '3%') {
+      if (time < 30 || time > 45) {
+        return 'For 3% dilution, please enter a value between 30-45 minutes'
+      }
+    }
+    return ''
+  }
+
   const handleAnalyze = async () => {
     if (!selectedFile) return
 
+    // Validate stain time
+    const error = validateStainTime(stainTime, dilution)
+    if (error) {
+      setValidationError(error)
+      return
+    }
+
     setLoading(true)
     setError('')
+    setValidationError('')
 
     try {
       const formData = new FormData()
       formData.append('file', selectedFile)
       formData.append('dilution', dilution)
       formData.append('smear_type', smearType)
-      formData.append('stain_time', stainTime)
+      formData.append('stain_time', stainTime.toString())
       formData.append('return_overlay_base64', 'true')
 
       const response = await axios.post('http://localhost:8000/api/explain-grade', formData, {
@@ -146,7 +168,11 @@ export default function SingleSlidePage() {
                 <label className="block text-sm font-medium mb-2">Dilution Method</label>
                 <select
                   value={dilution}
-                  onChange={(e) => setDilution(e.target.value)}
+                  onChange={(e) => {
+                    setDilution(e.target.value)
+                    setStainTime(e.target.value === '10%' ? 5 : 30)
+                    setValidationError('')
+                  }}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
                   <option value="10%">10% Rapid</option>
@@ -174,15 +200,23 @@ export default function SingleSlidePage() {
               <input
                 type="number"
                 value={stainTime}
-                onChange={(e) => setStainTime(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg text-lg font-semibold"
+                onChange={(e) => {
+                  setStainTime(parseFloat(e.target.value))
+                  setValidationError('')
+                }}
+                className="w-full px-3 py-2 border rounded-lg"
                 min="1"
                 step="0.5"
-                placeholder="Enter staining time"
+                placeholder={dilution === '10%' ? '5' : '30'}
               />
               <p className="text-xs text-gray-500 mt-1">
                 Time at which the slide was stained
               </p>
+              {validationError && (
+                <p className="text-xs text-red-600 mt-1 font-medium">
+                  {validationError}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -202,9 +236,9 @@ export default function SingleSlidePage() {
             {selectedFile && !result && !loading && (
               <button
                 onClick={handleAnalyze}
-                disabled={!stainTime || stainTime === ''}
+                disabled={!stainTime}
                 className={`w-full py-3 rounded-lg font-semibold transition-colors ${
-                  !stainTime || stainTime === ''
+                  !stainTime
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
