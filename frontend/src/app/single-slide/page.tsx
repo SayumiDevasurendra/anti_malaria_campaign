@@ -24,6 +24,7 @@ export default function SingleSlidePage() {
   // Form metadata
   const [dilution, setDilution] = useState('10%')
   const [smearType, setSmearType] = useState('Thin')
+  const [stainTime, setStainTime] = useState<string>('')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -46,6 +47,7 @@ export default function SingleSlidePage() {
       formData.append('file', selectedFile)
       formData.append('dilution', dilution)
       formData.append('smear_type', smearType)
+      formData.append('stain_time', stainTime)
       formData.append('return_overlay_base64', 'true')
 
       const response = await axios.post('http://localhost:8000/api/explain-grade', formData, {
@@ -137,18 +139,18 @@ export default function SingleSlidePage() {
 
           {/* Metadata */}
           <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-bold mb-4">Slide Metadata</h2>
+            <h2 className="text-xl font-bold mb-4">Slide Information</h2>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Dilution</label>
+                <label className="block text-sm font-medium mb-2">Dilution Method</label>
                 <select
                   value={dilution}
                   onChange={(e) => setDilution(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
-                  <option value="10%">10%</option>
-                  <option value="3%">3%</option>
+                  <option value="10%">10% Rapid</option>
+                  <option value="3%">3% Slow</option>
                 </select>
               </div>
 
@@ -163,6 +165,24 @@ export default function SingleSlidePage() {
                   <option value="Thick">Thick</option>
                 </select>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Current Staining Time (minutes) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                value={stainTime}
+                onChange={(e) => setStainTime(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg text-lg font-semibold"
+                min="1"
+                step="0.5"
+                placeholder="Enter staining time"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Time at which the slide was stained
+              </p>
             </div>
           </div>
         </div>
@@ -182,7 +202,12 @@ export default function SingleSlidePage() {
             {selectedFile && !result && !loading && (
               <button
                 onClick={handleAnalyze}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                disabled={!stainTime || stainTime === ''}
+                className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                  !stainTime || stainTime === ''
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
               >
                 Analyze Slide with GradCAM
               </button>
@@ -293,25 +318,27 @@ export default function SingleSlidePage() {
                 )}
 
                 {/* Probability Distribution */}
-                <div>
-                  <h3 className="font-semibold mb-3">Grade Probability Distribution</h3>
-                  <div className="space-y-2">
-                    {['I', 'II', 'III', 'IV', 'V'].map((grade, idx) => (
-                      <div key={grade}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Grade {grade}</span>
-                          <span>{(result.probabilities[idx] * 100).toFixed(1)}%</span>
+                {result.probabilities && result.probabilities.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-3">Grade Probability Distribution</h3>
+                    <div className="space-y-2">
+                      {['I', 'II', 'III', 'IV', 'V'].map((grade, idx) => (
+                        <div key={grade}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Grade {grade}</span>
+                            <span>{(result.probabilities[idx] * 100).toFixed(1)}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-blue-600 h-2 rounded-full"
+                              style={{ width: `${result.probabilities[idx] * 100}%` }}
+                            ></div>
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-blue-600 h-2 rounded-full"
-                            style={{ width: `${result.probabilities[idx] * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
