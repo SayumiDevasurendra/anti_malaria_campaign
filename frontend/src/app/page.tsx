@@ -80,7 +80,7 @@ export default function HomePage() {
       {/* AMC Grade Scale */}
       <section className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-bold mb-4">AMC Grade Scale Reference</h2>
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+        <div className="bg-blue-50 border-l-4 border-yellow-400 p-4 mb-6">
           <p className="font-semibold">
             Important: Per AMC MM-SOP-03C guidelines, only Grade III is acceptable for malaria diagnosis.
             All other grades indicate staining issues requiring corrective action.
@@ -93,15 +93,14 @@ export default function HomePage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grade</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Classification</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Corrective Action</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              <GradeRow grade="I" classification="Under-stained" status="Fail" action="Increase staining time 2-3 min" />
-              <GradeRow grade="II" classification="Lightly stained" status="Fail" action="Increase staining time 1-2 min" />
-              <GradeRow grade="III" classification="Optimal staining" status="Pass" action="No action needed - optimal" />
-              <GradeRow grade="IV" classification="Over-stained" status="Fail" action="Decrease staining time 1-2 min" />
-              <GradeRow grade="V" classification="Deeply over-stained" status="Fail" action="Decrease staining time 2-4 min" />
+              <GradeRow grade="I" classification="Under-stained" status="Fail" />
+              <GradeRow grade="II" classification="Lightly stained" status="Fail" />
+              <GradeRow grade="III" classification="Optimal staining" status="Pass" />
+              <GradeRow grade="IV" classification="Over-stained" status="Fail" />
+              <GradeRow grade="V" classification="Deeply over-stained" status="Fail" />
             </tbody>
           </table>
         </div>
@@ -144,7 +143,7 @@ function GuideStep({ number, title, description }: { number: number, title: stri
   )
 }
 
-function GradeRow({ grade, classification, status, action }: { grade: string, classification: string, status: string, action: string }) {
+function GradeRow({ grade, classification, status }: { grade: string, classification: string, status: string }) {
   const statusColor = status === 'Pass' ? 'text-green-600' : 'text-red-600';
   const statusSymbol = status === 'Pass' ? '✅' : '❌';
 
@@ -153,7 +152,6 @@ function GradeRow({ grade, classification, status, action }: { grade: string, cl
       <td className="px-6 py-4 whitespace-nowrap font-medium">{grade}</td>
       <td className="px-6 py-4">{classification}</td>
       <td className={`px-6 py-4 font-semibold ${statusColor}`}>{statusSymbol} {status}</td>
-      <td className="px-6 py-4">{action}</td>
     </tr>
   )
 }

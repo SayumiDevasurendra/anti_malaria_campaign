@@ -43,8 +43,8 @@ export default function SingleSlidePage() {
         return 'For 10% dilution, please enter a value between 5-20 minutes'
       }
     } else if (dilutionMethod === '3%') {
-      if (time < 30 || time > 45) {
-        return 'For 3% dilution, please enter a value between 30-45 minutes'
+      if (time < 27 || time > 41) {
+        return 'For 3% dilution, please enter a value between 27-41 minutes'
       }
     }
     return ''
@@ -170,7 +170,7 @@ export default function SingleSlidePage() {
                   value={dilution}
                   onChange={(e) => {
                     setDilution(e.target.value)
-                    setStainTime(e.target.value === '10%' ? 5 : 30)
+                    setStainTime(e.target.value === '10%' ? 5 : 27)
                     setValidationError('')
                   }}
                   className="w-full px-3 py-2 border rounded-lg"
@@ -207,7 +207,7 @@ export default function SingleSlidePage() {
                 className="w-full px-3 py-2 border rounded-lg"
                 min="1"
                 step="0.5"
-                placeholder={dilution === '10%' ? '5' : '30'}
+                placeholder={dilution === '10%' ? '5' : '27'}
               />
               <p className="text-xs text-gray-500 mt-1">
                 Time at which the slide was stained
