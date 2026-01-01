@@ -33,7 +33,7 @@ DEFAULT_TEST_IMAGE = project_root / 'data' / 'data_04' / 'processed' / 'batch01_
 DEFAULT_STAIN_TIME = 10.0  # 10 minutes for the default test image
 
 # Output path for visualization
-DEFAULT_OUTPUT_PATH = project_root / 'results' / 'results_04' / 'figures' / 'gradcam' / 'gradcam_output.png'
+DEFAULT_OUTPUT_PATH = project_root / 'results' / 'results_04' / 'figures' / 'gradcam' / 'scripts_test_gradcam' / 'gradcam_output.png'
 
 # Device selection (auto-detects GPU, falls back to CPU)
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
