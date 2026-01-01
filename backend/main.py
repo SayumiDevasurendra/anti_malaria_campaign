@@ -19,10 +19,13 @@ import base64
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / 'src'))
 
-# Define model path relative to project root
-DEFAULT_MODEL_PATH = str(project_root / 'outputs' / 'checkpoints_grade_time_balanced' / 'best_model.pth')
-
 from models.slide_grade_time_recommender import create_grade_time_model
+from utils.configuration import get_model_path
+
+# Define model path from centralized configuration
+DEFAULT_MODEL_PATH = get_model_path()
+
+# Re-import other modules
 from data.stain_time_transforms import get_stain_time_val_transforms
 from evaluation.staining_time_optimizer import StainingTimeOptimizer
 from evaluation.gradcam_explainer import GradeExplainer

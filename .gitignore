@@ -49,6 +49,7 @@ data/data_04/unlabeled/*
 
 # Models & Checkpoints
 models/models_04/*.pth
+models/models_04/model-01/*.pth
 models/models_04/*.pt
 checkpoints/checkpoints_04/*
 !checkpoints/checkpoints_04/.gitkeep

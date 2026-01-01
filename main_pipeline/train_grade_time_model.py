@@ -35,6 +35,22 @@ from src.utils.class_balance_utils import (
 )
 from src.utils.stain_time_logger import setup_stain_time_logger
 from src.utils.stain_time_seed import set_stain_time_seed
+from src.utils.configuration import (
+    get_checkpoint_dir,
+    get_tensorboard_dir,
+    get_log_dir,
+    DEFAULT_ARCHITECTURE,
+    DEFAULT_IMAGE_SIZE,
+    DEFAULT_BATCH_SIZE,
+    DEFAULT_NUM_EPOCHS,
+    DEFAULT_LEARNING_RATE,
+    DEFAULT_GRADE_WEIGHT,
+    DEFAULT_TIME_WEIGHT,
+    DEFAULT_USE_CLASS_WEIGHTS,
+    DEFAULT_USE_JOINT_SAMPLER,
+    DEFAULT_DEVICE,
+    DEFAULT_SEED
+)
 
 
 class MultiTaskLoss(nn.Module):
@@ -237,19 +253,19 @@ def validate_epoch(model, dataloader, criterion, device, epoch, writer=None):
 def train_model(
     train_csv: str,
     val_csv: str,
-    checkpoint_dir: str = 'checkpoints_grade_time',
-    tensorboard_dir: str = 'runs/runs_04',
-    architecture: str = 'resnet18',
-    img_size: tuple = (512, 512),
-    batch_size: int = 16,
-    num_epochs: int = 50,
-    lr: float = 1e-4,
-    grade_weight: float = 0.7,
-    time_weight: float = 0.3,
-    use_class_weights: bool = True,
-    use_joint_sampler: bool = True,
-    device: str = 'cuda',
-    seed: int = 42
+    checkpoint_dir: str = None,
+    tensorboard_dir: str = None,
+    architecture: str = None,
+    img_size: tuple = None,
+    batch_size: int = None,
+    num_epochs: int = None,
+    lr: float = None,
+    grade_weight: float = None,
+    time_weight: float = None,
+    use_class_weights: bool = None,
+    use_joint_sampler: bool = None,
+    device: str = None,
+    seed: int = None
 ):
     """
     Main training function with enhanced class balancing
@@ -257,23 +273,51 @@ def train_model(
     Args:
         train_csv: Path to training CSV (train_optimal.csv)
         val_csv: Path to validation CSV (val_optimal.csv)
-        checkpoint_dir: Directory to save checkpoints
-        architecture: CNN backbone architecture
-        img_size: Input image size
-        batch_size: Batch size for training
-        num_epochs: Number of training epochs
-        lr: Learning rate
-        grade_weight: Weight for grade loss
-        time_weight: Weight for time loss
-        use_class_weights: Use class weights in loss function
-        use_joint_sampler: Use joint weighted sampler (grade + dilution + time_delta)
-        device: Device to train on
-        seed: Random seed
+        checkpoint_dir: Directory to save checkpoints (default from config)
+        architecture: CNN backbone architecture (default from config)
+        img_size: Input image size (default from config)
+        batch_size: Batch size for training (default from config)
+        num_epochs: Number of training epochs (default from config)
+        lr: Learning rate (default from config)
+        grade_weight: Weight for grade loss (default from config)
+        time_weight: Weight for time loss (default from config)
+        use_class_weights: Use class weights in loss function (default from config)
+        use_joint_sampler: Use joint weighted sampler (default from config)
+        device: Device to train on (default from config)
+        seed: Random seed (default from config)
     """
+    # Load defaults from configuration if not provided
+    if checkpoint_dir is None:
+        checkpoint_dir = get_checkpoint_dir()
+    if tensorboard_dir is None:
+        tensorboard_dir = get_tensorboard_dir()
+    if architecture is None:
+        architecture = DEFAULT_ARCHITECTURE
+    if img_size is None:
+        img_size = DEFAULT_IMAGE_SIZE
+    if batch_size is None:
+        batch_size = DEFAULT_BATCH_SIZE
+    if num_epochs is None:
+        num_epochs = DEFAULT_NUM_EPOCHS
+    if lr is None:
+        lr = DEFAULT_LEARNING_RATE
+    if grade_weight is None:
+        grade_weight = DEFAULT_GRADE_WEIGHT
+    if time_weight is None:
+        time_weight = DEFAULT_TIME_WEIGHT
+    if use_class_weights is None:
+        use_class_weights = DEFAULT_USE_CLASS_WEIGHTS
+    if use_joint_sampler is None:
+        use_joint_sampler = DEFAULT_USE_JOINT_SAMPLER
+    if device is None:
+        device = DEFAULT_DEVICE
+    if seed is None:
+        seed = DEFAULT_SEED
+
     # Setup logger
     logger = setup_stain_time_logger(
         name="AMC_Training",
-        log_dir="logs/logs_04",
+        log_dir=get_log_dir(),
         level="INFO",
         console_output=True,
         file_output=True
@@ -485,19 +529,19 @@ def main():
     parser = argparse.ArgumentParser(description="Train multi-task grade + time model with class balancing")
     parser.add_argument('--train-csv', type=str, required=True, help='Path to training CSV (train_optimal.csv)')
     parser.add_argument('--val-csv', type=str, required=True, help='Path to validation CSV (val_optimal.csv)')
-    parser.add_argument('--checkpoint-dir', type=str, default='checkpoints_grade_time', help='Checkpoint directory')
-    parser.add_argument('--tensorboard-dir', type=str, default='runs/runs_04', help='TensorBoard log directory')
-    parser.add_argument('--architecture', type=str, default='resnet18', choices=['resnet18', 'resnet50', 'efficientnet_b0'])
-    parser.add_argument('--img-size', type=int, default=512, help='Input image size')
-    parser.add_argument('--batch-size', type=int, default=16, help='Batch size')
-    parser.add_argument('--epochs', type=int, default=50, help='Number of epochs')
-    parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate')
-    parser.add_argument('--grade-weight', type=float, default=0.7, help='Weight for grade loss')
-    parser.add_argument('--time-weight', type=float, default=0.3, help='Weight for time loss')
+    parser.add_argument('--checkpoint-dir', type=str, default=None, help='Checkpoint directory (default from config)')
+    parser.add_argument('--tensorboard-dir', type=str, default=None, help='TensorBoard log directory (default from config)')
+    parser.add_argument('--architecture', type=str, default=None, choices=['resnet18', 'resnet50', 'efficientnet_b0'], help='Architecture (default from config)')
+    parser.add_argument('--img-size', type=int, default=None, help='Input image size (default from config)')
+    parser.add_argument('--batch-size', type=int, default=None, help='Batch size (default from config)')
+    parser.add_argument('--epochs', type=int, default=None, help='Number of epochs (default from config)')
+    parser.add_argument('--lr', type=float, default=None, help='Learning rate (default from config)')
+    parser.add_argument('--grade-weight', type=float, default=None, help='Weight for grade loss (default from config)')
+    parser.add_argument('--time-weight', type=float, default=None, help='Weight for time loss (default from config)')
     parser.add_argument('--no-class-weights', action='store_true', help='Disable class weights in loss')
     parser.add_argument('--no-joint-sampler', action='store_true', help='Use simple grade sampler instead of joint')
-    parser.add_argument('--device', type=str, default='cuda', choices=['cuda', 'cpu'])
-    parser.add_argument('--seed', type=int, default=42, help='Random seed')
+    parser.add_argument('--device', type=str, default=None, choices=['cuda', 'cpu'], help='Device (default from config)')
+    parser.add_argument('--seed', type=int, default=None, help='Random seed (default from config)')
 
     args = parser.parse_args()
 
@@ -507,14 +551,14 @@ def main():
         checkpoint_dir=args.checkpoint_dir,
         tensorboard_dir=args.tensorboard_dir,
         architecture=args.architecture,
-        img_size=(args.img_size, args.img_size),
+        img_size=(args.img_size, args.img_size) if args.img_size is not None else None,
         batch_size=args.batch_size,
         num_epochs=args.epochs,
         lr=args.lr,
         grade_weight=args.grade_weight,
         time_weight=args.time_weight,
-        use_class_weights=not args.no_class_weights,
-        use_joint_sampler=not args.no_joint_sampler,
+        use_class_weights=not args.no_class_weights if args.no_class_weights else None,
+        use_joint_sampler=not args.no_joint_sampler if args.no_joint_sampler else None,
         device=args.device,
         seed=args.seed
     )

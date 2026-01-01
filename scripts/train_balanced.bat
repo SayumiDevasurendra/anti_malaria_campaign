@@ -3,11 +3,15 @@ REM Training script with recommended class balancing settings (Windows)
 REM
 REM Usage:
 REM   scripts\train_balanced.bat
+REM
+REM NOTE: Paths are now configured in src\utils\configuration.py
+REM       To change model paths, edit that file instead of this script.
+REM       These variables are kept here only for display purposes.
 
-REM Set paths
+REM Set paths (for display only - actual defaults come from configuration.py)
 set TRAIN_CSV=data\data_04\splits\train_optimal.csv
 set VAL_CSV=data\data_04\splits\val_optimal.csv
-set CHECKPOINT_DIR=checkpoints_grade_time_balanced
+set CHECKPOINT_DIR=models\models_04\model-01
 set TENSORBOARD_DIR=runs/runs_04
 
 REM Training parameters
@@ -43,20 +47,11 @@ echo ==========================================
 echo.
 
 REM Run training
+REM Note: Most parameters now use defaults from src\utils\configuration.py
+REM Only specify parameters here if you want to override the defaults
 python main_pipeline\train_grade_time_model.py ^
     --train-csv %TRAIN_CSV% ^
-    --val-csv %VAL_CSV% ^
-    --checkpoint-dir %CHECKPOINT_DIR% ^
-    --tensorboard-dir %TENSORBOARD_DIR% ^
-    --architecture %ARCHITECTURE% ^
-    --img-size %IMG_SIZE% ^
-    --batch-size %BATCH_SIZE% ^
-    --epochs %EPOCHS% ^
-    --lr %LR% ^
-    --grade-weight %GRADE_WEIGHT% ^
-    --time-weight %TIME_WEIGHT% ^
-    --device cuda ^
-    --seed 42
+    --val-csv %VAL_CSV%
 
 echo.
 echo ==========================================

@@ -9,6 +9,13 @@ from typing import Optional, Dict, Callable
 from tqdm import tqdm
 import numpy as np
 from pathlib import Path
+import sys
+
+# Add project root to path for imports
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root / 'src'))
+
+from utils.configuration import get_checkpoint_dir
 
 
 class SlideGradeTrainer:
@@ -24,10 +31,13 @@ class SlideGradeTrainer:
         scheduler: Optional[optim.lr_scheduler._LRScheduler] = None,
         device: str = 'cuda',
         use_amp: bool = True,
-        save_dir: str = 'checkpoints/checkpoints_04',
+        save_dir: str = None,
         logger: Optional[Callable] = None
     ):
         """Init trainer with model, data loaders, optimizer, and optional AMP"""
+        # Use default from config if not provided
+        if save_dir is None:
+            save_dir = get_checkpoint_dir()
         self.model = model.to(device)
         self.train_loader = train_loader
         self.val_loader = val_loader

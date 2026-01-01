@@ -7,11 +7,15 @@
 # Or on Windows:
 #   bash scripts/train_balanced.sh
 #   (or use train_balanced.bat)
+#
+# NOTE: Paths are now configured in src/utils/configuration.py
+#       To change model paths, edit that file instead of this script.
+#       These variables are kept here only for display purposes.
 
-# Set paths
+# Set paths (for display only - actual defaults come from configuration.py)
 TRAIN_CSV="data/data_04/splits/train_optimal.csv"
 VAL_CSV="data/data_04/splits/val_optimal.csv"
-CHECKPOINT_DIR="checkpoints_grade_time_balanced"
+CHECKPOINT_DIR="models/models_04/model-01"
 TENSORBOARD_DIR="runs/runs_04"
 
 # Training parameters
@@ -51,20 +55,11 @@ echo "=========================================="
 echo ""
 
 # Run training
+# Note: Most parameters now use defaults from src/utils/configuration.py
+# Only specify parameters here if you want to override the defaults
 python main_pipeline/train_grade_time_model.py \
     --train-csv "$TRAIN_CSV" \
-    --val-csv "$VAL_CSV" \
-    --checkpoint-dir "$CHECKPOINT_DIR" \
-    --tensorboard-dir "$TENSORBOARD_DIR" \
-    --architecture "$ARCHITECTURE" \
-    --img-size "$IMG_SIZE" \
-    --batch-size "$BATCH_SIZE" \
-    --epochs "$EPOCHS" \
-    --lr "$LR" \
-    --grade-weight "$GRADE_WEIGHT" \
-    --time-weight "$TIME_WEIGHT" \
-    --device cuda \
-    --seed 42
+    --val-csv "$VAL_CSV"
 
 echo ""
 echo "=========================================="
