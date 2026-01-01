@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional
+from contextlib import asynccontextmanager
 import torch
 from PIL import Image
 import io
@@ -20,7 +21,12 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / 'src'))
 
 from models.slide_grade_time_recommender import create_grade_time_model
-from utils.configuration import get_model_path
+from utils.configuration import (
+    get_model_path,
+    API_HOST,
+    API_PORT,
+    CORS_ORIGINS
+)
 
 # Define model path from centralized configuration
 DEFAULT_MODEL_PATH = get_model_path()
@@ -30,12 +36,24 @@ from data.stain_time_transforms import get_stain_time_val_transforms
 from evaluation.staining_time_optimizer import StainingTimeOptimizer
 from evaluation.gradcam_explainer import GradeExplainer
 
-app = FastAPI(title="Stain Time Optimization API", version="0.1.0")
 
-# CORS middleware
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan event handler - runs on startup and shutdown"""
+    print(f"Loading model from: {DEFAULT_MODEL_PATH}")
+    yield
+    
+
+app = FastAPI(
+    title="Stain Time Optimization API",
+    version="0.1.0",
+    lifespan=lifespan
+)
+
+# CORS middleware - configured from centralized config
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -387,4 +405,10 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        app,
+        host=API_HOST,
+        port=API_PORT,
+        reload=True,
+        reload_dirs=["backend", "src"]
+    )

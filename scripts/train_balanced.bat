@@ -47,11 +47,10 @@ echo ==========================================
 echo.
 
 REM Run training
-REM Note: Most parameters now use defaults from src\utils\configuration.py
+REM Note: All parameters now use defaults from src\utils\configuration.py
 REM Only specify parameters here if you want to override the defaults
-python main_pipeline\train_grade_time_model.py ^
-    --train-csv %TRAIN_CSV% ^
-    --val-csv %VAL_CSV%
+REM CSV paths are also now configured in src\utils\configuration.py
+python main_pipeline\train_grade_time_model.py
 
 echo.
 echo ==========================================

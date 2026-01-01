@@ -39,6 +39,8 @@ from src.utils.configuration import (
     get_checkpoint_dir,
     get_tensorboard_dir,
     get_log_dir,
+    get_train_csv,
+    get_val_csv,
     DEFAULT_ARCHITECTURE,
     DEFAULT_IMAGE_SIZE,
     DEFAULT_BATCH_SIZE,
@@ -527,8 +529,8 @@ def train_model(
 
 def main():
     parser = argparse.ArgumentParser(description="Train multi-task grade + time model with class balancing")
-    parser.add_argument('--train-csv', type=str, required=True, help='Path to training CSV (train_optimal.csv)')
-    parser.add_argument('--val-csv', type=str, required=True, help='Path to validation CSV (val_optimal.csv)')
+    parser.add_argument('--train-csv', type=str, default=None, help='Path to training CSV (default from config)')
+    parser.add_argument('--val-csv', type=str, default=None, help='Path to validation CSV (default from config)')
     parser.add_argument('--checkpoint-dir', type=str, default=None, help='Checkpoint directory (default from config)')
     parser.add_argument('--tensorboard-dir', type=str, default=None, help='TensorBoard log directory (default from config)')
     parser.add_argument('--architecture', type=str, default=None, choices=['resnet18', 'resnet50', 'efficientnet_b0'], help='Architecture (default from config)')
@@ -545,9 +547,13 @@ def main():
 
     args = parser.parse_args()
 
+    # Use defaults from config if not provided
+    train_csv = args.train_csv if args.train_csv is not None else get_train_csv()
+    val_csv = args.val_csv if args.val_csv is not None else get_val_csv()
+
     train_model(
-        train_csv=args.train_csv,
-        val_csv=args.val_csv,
+        train_csv=train_csv,
+        val_csv=val_csv,
         checkpoint_dir=args.checkpoint_dir,
         tensorboard_dir=args.tensorboard_dir,
         architecture=args.architecture,
