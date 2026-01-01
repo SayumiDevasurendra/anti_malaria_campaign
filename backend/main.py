@@ -19,6 +19,9 @@ import base64
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / 'src'))
 
+# Define model path relative to project root
+DEFAULT_MODEL_PATH = str(project_root / 'outputs' / 'checkpoints_grade_time_balanced' / 'best_model.pth')
+
 from models.slide_grade_time_recommender import create_grade_time_model
 from data.stain_time_transforms import get_stain_time_val_transforms
 from evaluation.staining_time_optimizer import StainingTimeOptimizer
@@ -42,8 +45,10 @@ FINDER_CACHE = {}
 TRANSFORM = get_stain_time_val_transforms((512, 512))
 
 
-def load_model(model_path: str = "checkpoints_grade_time_balanced/best_model.pth"):
+def load_model(model_path: str = None):
     """Load and cache the multi-task model (grade + time)"""
+    if model_path is None:
+        model_path = DEFAULT_MODEL_PATH
     if model_path not in MODEL_CACHE:
         model = create_grade_time_model(
             architecture='resnet18',
@@ -58,8 +63,10 @@ def load_model(model_path: str = "checkpoints_grade_time_balanced/best_model.pth
     return MODEL_CACHE[model_path]
 
 
-def load_explainer(model_path: str = "checkpoints_grade_time_balanced/best_model.pth", device: str = 'cpu'):
+def load_explainer(model_path: str = None, device: str = 'cpu'):
     """Load and cache the Grad-CAM explainer"""
+    if model_path is None:
+        model_path = DEFAULT_MODEL_PATH
     cache_key = f"{model_path}_{device}"
     if cache_key not in EXPLAINER_CACHE:
         model = load_model(model_path)
@@ -203,15 +210,18 @@ async def find_optimal_time(
         return result
 
     except Exception as e:
-        return {"error": str(e)}, 500
+        import traceback
+        print(f"Error in grade_slide: {str(e)}")
+        print(traceback.format_exc())
+        return {"error": str(e), "details": traceback.format_exc()}
 
 
 @app.post("/api/explain-grade")
 async def explain_grade(
     file: UploadFile = File(...),
-    dilution: Optional[str] = Form(None),
-    smear_type: Optional[str] = Form(None),
-    stain_time: Optional[int] = Form(None),
+    dilution: str = Form(...),
+    smear_type: str = Form(...),
+    stain_time: float = Form(...),
     return_overlay_base64: bool = Form(True)
 ):
     """Tab 1: Diagnostic with Grad-CAM explanation"""
@@ -229,8 +239,11 @@ async def explain_grade(
         # Transform image
         image_tensor = TRANSFORM(image).unsqueeze(0)
 
+        # Prepare current_time tensor from user input
+        current_time_tensor = torch.tensor([stain_time], dtype=torch.float32)
+
         # Generate explanation
-        explanation = explainer.explain(image_tensor, image_np)
+        explanation = explainer.explain(image_tensor, image_np, current_time_tensor)
 
         # Prepare response
         response = {
@@ -260,7 +273,10 @@ async def explain_grade(
         return response
 
     except Exception as e:
-        return {"error": str(e)}, 500
+        import traceback
+        print(f"Error in explain_grade: {str(e)}")
+        print(traceback.format_exc())
+        return {"error": str(e), "details": traceback.format_exc()}
 
 
 @app.post("/api/recommend-time")
@@ -350,7 +366,10 @@ async def recommend_time(
             }
 
     except Exception as e:
-        return {"error": str(e)}, 500
+        import traceback
+        print(f"Error in recommend_time: {str(e)}")
+        print(traceback.format_exc())
+        return {"error": str(e), "details": traceback.format_exc()}
 
 
 @app.get("/api/health")

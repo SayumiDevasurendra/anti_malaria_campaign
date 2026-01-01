@@ -83,20 +83,27 @@ class GradCAM:
     def generate_cam(
         self,
         input_tensor: torch.Tensor,
-        target_class: Optional[int] = None
+        target_class: Optional[int] = None,
+        current_time: Optional[torch.Tensor] = None
     ) -> np.ndarray:
         """Generate Grad-CAM heatmap
 
         Args:
             input_tensor: Input image tensor (1, C, H, W)
             target_class: Target class index (if None, uses predicted class)
+            current_time: Current staining time (optional, for time-aware models)
 
         Returns:
             Heatmap as numpy array (H, W) with values in [0, 1]
         """
         # Forward pass
         self.model.zero_grad()
-        output = self.model(input_tensor)
+
+        # current_time is required for time-aware models
+        if current_time is None:
+            raise ValueError("current_time parameter is required for time-aware models")
+
+        output = self.model(input_tensor, current_time)
 
         # Handle multi-task model (returns tuple: grade_logits, time_deltas)
         if isinstance(output, tuple):
@@ -170,7 +177,8 @@ class GradCAM:
         input_tensor: torch.Tensor,
         input_image: np.ndarray,
         target_class: Optional[int] = None,
-        return_prediction: bool = True
+        return_prediction: bool = True,
+        current_time: Optional[torch.Tensor] = None
     ) -> Dict:
         """Generate full explanation for a prediction
 
@@ -179,6 +187,7 @@ class GradCAM:
             input_image: Original image as numpy array (H, W, 3) in RGB
             target_class: Target class to explain (if None, uses prediction)
             return_prediction: Whether to include prediction details
+            current_time: Current staining time (optional, for time-aware models)
 
         Returns:
             Dictionary containing:
@@ -189,8 +198,12 @@ class GradCAM:
                 - confidence: Prediction confidence
                 - probabilities: All class probabilities
         """
+        # current_time is required for time-aware models
+        if current_time is None:
+            raise ValueError("current_time parameter is required for time-aware models")
+
         with torch.no_grad():
-            output = self.model(input_tensor)
+            output = self.model(input_tensor, current_time)
 
             # Handle multi-task model (returns tuple: grade_logits, time_deltas)
             if isinstance(output, tuple):
@@ -201,7 +214,7 @@ class GradCAM:
             confidence = probs[0, predicted_class].item()
 
         # Generate CAM for target class (or predicted class)
-        cam = self.generate_cam(input_tensor, target_class)
+        cam = self.generate_cam(input_tensor, target_class, current_time)
 
         # Generate overlay
         overlay = self.generate_overlay(input_image, cam)
@@ -258,13 +271,15 @@ class GradeExplainer:
     def explain(
         self,
         input_tensor: torch.Tensor,
-        input_image: np.ndarray
+        input_image: np.ndarray,
+        current_time: Optional[torch.Tensor] = None
     ) -> Dict:
         """Generate comprehensive explanation for slide grade
 
         Args:
             input_tensor: Preprocessed input tensor (1, C, H, W)
             input_image: Original image as numpy array (H, W, 3) in RGB
+            current_time: Current staining time (optional, for time-aware models)
 
         Returns:
             Dictionary with:
@@ -280,11 +295,18 @@ class GradeExplainer:
         # Move tensor to device
         input_tensor = input_tensor.to(self.device)
 
+        # current_time is required for time-aware models
+        if current_time is None:
+            raise ValueError("current_time parameter is required. User must provide staining time.")
+
+        current_time = current_time.to(self.device)
+
         # Generate explanation
         explanation = self.gradcam.explain_prediction(
             input_tensor,
             input_image,
-            return_prediction=True
+            return_prediction=True,
+            current_time=current_time
         )
 
         # Extract prediction details

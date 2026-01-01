@@ -85,20 +85,24 @@ class SlideGradeTimeRecommender(nn.Module):
         arch = architecture.lower()
 
         if arch == 'resnet18':
-            model = models.resnet18(pretrained=pretrained)
+            weights = models.ResNet18_Weights.DEFAULT if pretrained else None
+            model = models.resnet18(weights=weights)
             # Remove final FC layer, keep up to avgpool
             model = nn.Sequential(*list(model.children())[:-1])
 
         elif arch == 'resnet50':
-            model = models.resnet50(pretrained=pretrained)
+            weights = models.ResNet50_Weights.DEFAULT if pretrained else None
+            model = models.resnet50(weights=weights)
             model = nn.Sequential(*list(model.children())[:-1])
 
         elif arch == 'efficientnet_b0':
-            model = models.efficientnet_b0(pretrained=pretrained)
+            weights = models.EfficientNet_B0_Weights.DEFAULT if pretrained else None
+            model = models.efficientnet_b0(weights=weights)
             model.classifier = nn.Identity()
 
         elif arch == 'mobilenet_v3_small':
-            model = models.mobilenet_v3_small(pretrained=pretrained)
+            weights = models.MobileNet_V3_Small_Weights.DEFAULT if pretrained else None
+            model = models.mobilenet_v3_small(weights=weights)
             model.classifier = nn.Identity()
 
         else:

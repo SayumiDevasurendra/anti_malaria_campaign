@@ -52,6 +52,7 @@ models/models_04/*.pth
 models/models_04/*.pt
 checkpoints/checkpoints_04/*
 !checkpoints/checkpoints_04/.gitkeep
+outputs
 
 # Logs
 logs/logs_04/*
