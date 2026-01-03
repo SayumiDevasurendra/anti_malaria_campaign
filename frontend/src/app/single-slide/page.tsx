@@ -321,11 +321,8 @@ export default function SingleSlidePage() {
                   </div>
                 ) : (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                    <p className="font-semibold text-red-800 mb-2">
+                    <p className="font-semibold text-red-800">
                       ❌ Slide Failed: Grade {result.grade_label}
-                    </p>
-                    <p className="text-sm text-red-700 mb-4">
-                      {result.reason}
                     </p>
                   </div>
                 )}
