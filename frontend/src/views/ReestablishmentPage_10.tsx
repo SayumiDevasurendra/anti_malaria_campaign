@@ -230,10 +230,10 @@ export const ReestablishmentPage_10 = () => {
                                             value={checklist.primary_larvae}
                                             onChange={(e) => handleChecklistChange("primary_larvae", e.target.value)}
                                             options={[
-                                                { label: "None (0)", value: 0 },
-                                                { label: "0–10 (2)", value: 2 },
-                                                { label: "10–20 (3)", value: 3 },
-                                                { label: "> 20 (4)", value: 4 },
+                                                { label: "None", value: 0 },
+                                                { label: "0–10", value: 2 },
+                                                { label: "10–20", value: 3 },
+                                                { label: "> 20", value: 4 },
                                             ]}
                                         />
                                         <Select_10
@@ -241,35 +241,35 @@ export const ReestablishmentPage_10 = () => {
                                             value={checklist.primary_adults}
                                             onChange={(e) => handleChecklistChange("primary_adults", e.target.value)}
                                             options={[
-                                                { label: "None (0)", value: 0 },
-                                                { label: "0–10 (4)", value: 4 },
-                                                { label: "10–20 (6)", value: 6 },
-                                                { label: "> 20 (8)", value: 8 },
+                                                { label: "None", value: 0 },
+                                                { label: "0–10", value: 4 },
+                                                { label: "10–20", value: 6 },
+                                                { label: "> 20", value: 8 },
                                             ]}
                                         />
                                         <Select_10
                                             label="Secondary vector larvae?"
                                             value={checklist.secondary_larvae}
                                             onChange={(e) => handleChecklistChange("secondary_larvae", e.target.value)}
-                                            options={[{ label: "No (0)", value: 0 }, { label: "Yes (1)", value: 1 }]}
+                                            options={[{ label: "No", value: 0 }, { label: "Yes", value: 1 }]}
                                         />
                                         <Select_10
                                             label="Secondary vector adults?"
                                             value={checklist.secondary_adults}
                                             onChange={(e) => handleChecklistChange("secondary_adults", e.target.value)}
-                                            options={[{ label: "No (0)", value: 0 }, { label: "Yes (1)", value: 1 }]}
+                                            options={[{ label: "No", value: 0 }, { label: "Yes", value: 1 }]}
                                         />
                                         <Select_10
                                             label="An. stephensi larvae?"
                                             value={checklist.stephensi_larvae}
                                             onChange={(e) => handleChecklistChange("stephensi_larvae", e.target.value)}
-                                            options={[{ label: "No (0)", value: 0 }, { label: "Yes (2)", value: 2 }]}
+                                            options={[{ label: "No", value: 0 }, { label: "Yes", value: 2 }]}
                                         />
                                         <Select_10
                                             label="An. stephensi adults?"
                                             value={checklist.stephensi_adults}
                                             onChange={(e) => handleChecklistChange("stephensi_adults", e.target.value)}
-                                            options={[{ label: "No (0)", value: 0 }, { label: "Yes (2)", value: 2 }]}
+                                            options={[{ label: "No", value: 0 }, { label: "Yes", value: 2 }]}
                                         />
                                     </div>
                                 </div>
@@ -283,9 +283,9 @@ export const ReestablishmentPage_10 = () => {
                                             value={checklist.culicifacies_indoor}
                                             onChange={(e) => handleChecklistChange("culicifacies_indoor", e.target.value)}
                                             options={[
-                                                { label: "None (0)", value: 0 },
-                                                { label: "0 < 1 (5)", value: 5 },
-                                                { label: ">= 1 (6)", value: 6 },
+                                                { label: "None", value: 0 },
+                                                { label: "0 < 1", value: 5 },
+                                                { label: ">= 1", value: 6 },
                                             ]}
                                         />
                                         <Select_10
@@ -293,34 +293,34 @@ export const ReestablishmentPage_10 = () => {
                                             value={checklist.culicifacies_outdoor}
                                             onChange={(e) => handleChecklistChange("culicifacies_outdoor", e.target.value)}
                                             options={[
-                                                { label: "None (0)", value: 0 },
-                                                { label: "0 < 1 (5)", value: 5 },
-                                                { label: ">= 1 (6)", value: 6 },
+                                                { label: "None", value: 0 },
+                                                { label: "0 < 1", value: 5 },
+                                                { label: ">= 1", value: 6 },
                                             ]}
                                         />
                                         <Select_10
                                             label="Secondary vectors biting (Outdoor)?"
                                             value={checklist.sec_outdoor}
                                             onChange={(e) => handleChecklistChange("sec_outdoor", e.target.value)}
-                                            options={[{ label: "No (0)", value: 0 }, { label: "Yes (2)", value: 2 }]}
+                                            options={[{ label: "No", value: 0 }, { label: "Yes", value: 2 }]}
                                         />
                                         <Select_10
                                             label="Secondary vectors biting (Indoor)?"
                                             value={checklist.sec_indoor}
                                             onChange={(e) => handleChecklistChange("sec_indoor", e.target.value)}
-                                            options={[{ label: "No (0)", value: 0 }, { label: "Yes (2)", value: 2 }]}
+                                            options={[{ label: "No", value: 0 }, { label: "Yes", value: 2 }]}
                                         />
                                         <Select_10
                                             label="Parous An. culicifacies present?"
                                             value={checklist.parous_culicifacies}
                                             onChange={(e) => handleChecklistChange("parous_culicifacies", e.target.value)}
-                                            options={[{ label: "No (0)", value: 0 }, { label: "Yes (4)", value: 4 }]}
+                                            options={[{ label: "No", value: 0 }, { label: "Yes", value: 4 }]}
                                         />
                                         <Select_10
                                             label="Parous secondary vectors present?"
                                             value={checklist.parous_sec}
                                             onChange={(e) => handleChecklistChange("parous_sec", e.target.value)}
-                                            options={[{ label: "No (0)", value: 0 }, { label: "Yes (2)", value: 2 }]}
+                                            options={[{ label: "No", value: 0 }, { label: "Yes", value: 2 }]}
                                         />
                                     </div>
                                 </div>
@@ -333,19 +333,19 @@ export const ReestablishmentPage_10 = () => {
                                             label="Key breeding places present?"
                                             value={checklist.breeding_places}
                                             onChange={(e) => handleChecklistChange("breeding_places", e.target.value)}
-                                            options={[{ label: "No (0)", value: 0 }, { label: "Yes (1)", value: 1 }]}
+                                            options={[{ label: "No", value: 0 }, { label: "Yes", value: 1 }]}
                                         />
                                         <Select_10
                                             label="Projects creating breeding grounds?"
                                             value={checklist.dev_projects}
                                             onChange={(e) => handleChecklistChange("dev_projects", e.target.value)}
-                                            options={[{ label: "No (0)", value: 0 }, { label: "Yes (1)", value: 1 }]}
+                                            options={[{ label: "No", value: 0 }, { label: "Yes", value: 1 }]}
                                         />
                                         <Select_10
                                             label="Previous malaria endemicity?"
                                             value={checklist.prev_endemicity}
                                             onChange={(e) => handleChecklistChange("prev_endemicity", e.target.value)}
-                                            options={[{ label: "No (0)", value: 0 }, { label: "Yes (1)", value: 1 }]}
+                                            options={[{ label: "No", value: 0 }, { label: "Yes", value: 1 }]}
                                         />
                                     </div>
                                 </div>
@@ -361,14 +361,14 @@ export const ReestablishmentPage_10 = () => {
                 <Card_10 className="bg-slate-900 text-white border-slate-800 sticky bottom-4 shadow-2xl z-50">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="text-center md:text-left">
-                            <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">Final Assessment</p>
-                            <h2 className="text-2xl font-bold text-white mt-1">Risk of Re-establishment</h2>
+                            <p className="text-xs text-black uppercase tracking-widest font-bold">Final Assessment</p>
+                            <h2 className="text-2xl font-bold text-black mt-1">Risk of Re-establishment</h2>
                         </div>
 
                         <div className="flex items-center gap-8">
                             <div className="text-right hidden md:block">
-                                <p className="text-sm text-slate-400">Receptivity: <span className="text-white font-medium">{receptivityRiskLevel}</span></p>
-                                <p className="text-sm text-slate-400">Importation: <span className="text-white font-medium">{importationRiskLevel}</span></p>
+                                <p className="text-sm text-black">Receptivity: <span className="text-black font-medium">{receptivityRiskLevel}</span></p>
+                                <p className="text-sm text-black">Importation: <span className="text-black font-medium">{importationRiskLevel}</span></p>
                             </div>
                             <Badge_10 label={finalRisk} className="text-xl px-8 py-3" />
                         </div>
