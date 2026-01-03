@@ -193,7 +193,7 @@ export default function SingleSlidePage() {
               </div>
             </div>
 
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-medium mb-2">
                 Current Staining Time (minutes) <span className="text-red-500">*</span>
               </label>
@@ -218,6 +218,29 @@ export default function SingleSlidePage() {
                 </p>
               )}
             </div>
+
+            {/* Analyze Button */}
+            {selectedFile && !result && !loading && (
+              <button
+                onClick={handleAnalyze}
+                disabled={!stainTime}
+                className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                  !stainTime
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+              >
+                Analyze Slide with GradCAM
+              </button>
+            )}
+
+            {/* Loading State */}
+            {loading && (
+              <div className="text-center py-6">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Analyzing slide...</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -234,23 +257,9 @@ export default function SingleSlidePage() {
             )}
 
             {selectedFile && !result && !loading && (
-              <button
-                onClick={handleAnalyze}
-                disabled={!stainTime}
-                className={`w-full py-3 rounded-lg font-semibold transition-colors ${
-                  !stainTime
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-              >
-                Analyze Slide with GradCAM
-              </button>
-            )}
-
-            {loading && (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Analyzing slide...</p>
+              <div className="text-center py-12 text-gray-400">
+                <FileImage className="w-16 h-16 mx-auto mb-4" />
+                <p>Click "Analyze Slide with GradCAM" to begin</p>
               </div>
             )}
 
