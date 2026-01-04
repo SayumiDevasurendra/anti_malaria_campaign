@@ -120,8 +120,8 @@ export const DistrictMap_10 = () => {
                                     type="number"
                                     value={year}
                                     onChange={(e) => setYear(Number(e.target.value))}
-                                    min={2020}
-                                    max={2030}
+                                    min={2026}
+                                    max={2050}
                                 />
                             </div>
                             <div className="w-full md:w-48">

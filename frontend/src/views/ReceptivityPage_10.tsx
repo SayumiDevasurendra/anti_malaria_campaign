@@ -98,8 +98,8 @@ export const ReceptivityPage_10 = () => {
                     <Input_10
                         label="Year"
                         type="number"
-                        min={2000}
-                        max={2100}
+                        min={2026}
+                        max={2050}
                         value={formData.year}
                         onChange={(e) => setFormData({ ...formData, year: Number(e.target.value) })}
                     />
