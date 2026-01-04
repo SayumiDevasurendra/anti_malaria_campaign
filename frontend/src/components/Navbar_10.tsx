@@ -14,6 +14,7 @@ export const Navbar_10 = () => {
         { href: "/receptivity", label: "Receptivity" },
         { href: "/importation", label: "Importation" },
         { href: "/re-establishment", label: "Re-establishment" },
+        { href: "/district-map", label: "District Map" },
     ];
 
     const isActive = (path: string) => {
@@ -43,8 +44,8 @@ export const Navbar_10 = () => {
                                 key={link.href}
                                 href={link.href}
                                 className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200 ${isActive(link.href)
-                                        ? "border-blue-500 text-slate-900"
-                                        : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700"
+                                    ? "border-blue-500 text-slate-900"
+                                    : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700"
                                     }`}
                             >
                                 {link.label}
@@ -103,8 +104,8 @@ export const Navbar_10 = () => {
                             href={link.href}
                             onClick={() => setIsOpen(false)}
                             className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${isActive(link.href)
-                                    ? "bg-blue-50 border-blue-500 text-blue-700"
-                                    : "border-transparent text-slate-500 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700"
+                                ? "bg-blue-50 border-blue-500 text-blue-700"
+                                : "border-transparent text-slate-500 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700"
                                 }`}
                         >
                             {link.label}
