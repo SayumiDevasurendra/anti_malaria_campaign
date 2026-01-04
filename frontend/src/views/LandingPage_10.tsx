@@ -28,7 +28,7 @@ export const LandingPage_10 = () => {
             </section>
 
             {/* Features Grid */}
-            <section className="max-w-7xl mx-auto px-4 grid gap-8 md:grid-cols-3">
+            <section className="max-w-7xl mx-auto px-4 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
                 <Card_10 title="Climatic Forecasting" className="h-full flex flex-col hover:shadow-lg transition-shadow">
                     <div className="flex-1">
                         <p className="text-slate-600 mb-6">
@@ -64,6 +64,19 @@ export const LandingPage_10 = () => {
                     <Link href="/importation" className="mt-auto">
                         <Button_10 variant="secondary" className="w-full">
                             Go to Importation
+                        </Button_10>
+                    </Link>
+                </Card_10>
+
+                <Card_10 title="District Risk Map" className="h-full flex flex-col hover:shadow-lg transition-shadow border-blue-100 bg-blue-50/30">
+                    <div className="flex-1">
+                        <p className="text-slate-600 mb-6">
+                            Visualize the combined risk of re-establishment across Sri Lanka with interactive maps, metric selection, and detailed district-wise analysis.
+                        </p>
+                    </div>
+                    <Link href="/district-map" className="mt-auto">
+                        <Button_10 variant="secondary" className="w-full">
+                            Open Map
                         </Button_10>
                     </Link>
                 </Card_10>
