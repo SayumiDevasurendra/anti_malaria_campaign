@@ -25,3 +25,15 @@ export interface ImportationForecastResponse_10 {
     forecasted_national_imported_cases: number;
     district_monthly_importation_pressure: number;
 }
+
+export interface DistrictPrediction_10 {
+    id: string; // The ID from the SVG (e.g., LKA2448)
+    name: string; // The name from the SVG (e.g., Mahanuwara)
+    riskLevel: "Low" | "Moderate" | "High" | "Critical";
+    cases: number;
+    rainfall: number;
+    temperature: number;
+    humidity: number;
+    importationPressure: number;
+    details: string;
+}
