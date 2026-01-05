@@ -8,17 +8,11 @@ import { Select_10 } from "../components/Select_10";
 import { Input_10 } from "../components/Input_10";
 import { Card_10 } from "../components/Card_10";
 import { forecastClimate_10, forecastImportation_10 } from "../utils/api_10";
-import { MONTHS_10 } from "../utils/constants_10";
+import { MONTHS_10, DISTRICTS_10, DISTRICT_DISPLAY_NAMES_10 } from "../utils/constants_10";
 
 // District name mapping if needed (SVG names to Backend names)
 // Currently they seem to match the constants.
-const DISTRICT_NAMES = [
-    "Anuradhapura", "Badulla", "Batticaloa", "Colombo", "Galle",
-    "Hambantota", "Jaffna", "Katugastota", "Katunayake", "Kurunegala",
-    "Mahaillukpallama", "Mannar", "Mattala", "Monaragala", "Nuwara Eliya",
-    "Polonnaruwa", "Potuvil", "Puttalam", "Ratmalana", "Ratnapura",
-    "Trincomalee", "Vavuniya"
-];
+const DISTRICT_NAMES = DISTRICTS_10;
 
 export const DistrictMap_10 = () => {
     const [year, setYear] = useState(new Date().getFullYear());
@@ -223,7 +217,7 @@ export const DistrictMap_10 = () => {
                         {selectedDistrict ? (
                             <div className="bg-white p-6 rounded-xl shadow-lg border border-slate-200 animate-fade-in-up">
                                 <h2 className="text-2xl font-bold text-slate-900 mb-4 border-b pb-2">
-                                    {selectedDistrict.name}
+                                    {DISTRICT_DISPLAY_NAMES_10[selectedDistrict.name] || selectedDistrict.name}
                                 </h2>
 
                                 <div className="space-y-4">

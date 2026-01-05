@@ -1,5 +1,6 @@
 import React from "react";
 import { DistrictPrediction_10 } from "../types/types_10";
+import { DISTRICT_DISPLAY_NAMES_10 } from "../utils/constants_10";
 
 interface DistrictMapSVGProps {
     onDistrictClick: (id: string, name: string) => void;
@@ -86,7 +87,9 @@ export const DistrictMapSVG_10: React.FC<DistrictMapSVGProps> = ({
                     style={{ fill: getFillColor(district.name, district.id) }}
                     className="cursor-pointer transition-colors duration-200 stroke-slate-400 hover:stroke-[3px] stroke-[1px]"
                     onClick={() => onDistrictClick(district.id, district.name)}
-                />
+                >
+                    <title>{DISTRICT_DISPLAY_NAMES_10[district.name] || district.name}</title>
+                </path>
             ))}
             {/* Additional elements like cities if needed */}
         </svg>
