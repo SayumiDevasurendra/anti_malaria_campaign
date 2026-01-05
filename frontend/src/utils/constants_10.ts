@@ -1,7 +1,6 @@
 export const DISTRICTS_10 = [
     "Anuradhapura",
     "Badulla",
-    "Bandarawela",
     "Batticaloa",
     "Colombo",
     "Galle",
@@ -23,6 +22,23 @@ export const DISTRICTS_10 = [
     "Trincomalee",
     "Vavuniya",
 ];
+
+export const DISTRICT_DISPLAY_NAMES_10: Record<string, string> = {
+    "Katugastota": "Mahanuwara",
+    "Katunayake": "Gampaha",
+    "Mahaillukpallama": "Matale",
+    "Mattala": "Matara",
+    "Potuvil": "Ampara",
+    "Vavuniya": "Vavuniya & Mulativ",
+    "Mannar": "Mannar & Kilinochi",
+    "Ratnapura": "Ratnapura & Kegalle",
+    "Ratmalana": "Kalutara",
+};
+
+export const DISTRICT_OPTIONS_10 = DISTRICTS_10.map((district) => ({
+    value: district,
+    label: DISTRICT_DISPLAY_NAMES_10[district] || district,
+}));
 
 export const MONTHS_10 = [
     { value: 1, label: "January" },

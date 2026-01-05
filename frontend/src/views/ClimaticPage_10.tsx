@@ -7,7 +7,7 @@ import { Select_10 } from "../components/Select_10";
 import { Input_10 } from "../components/Input_10";
 import { Badge_10 } from "../components/Badge_10";
 import { forecastClimate_10 } from "../utils/api_10";
-import { DISTRICTS_10, MONTHS_10 } from "../utils/constants_10";
+import { DISTRICTS_10, MONTHS_10, DISTRICT_OPTIONS_10 } from "../utils/constants_10";
 import { ClimaticForecastResponse_10 } from "../types/types_10";
 
 export const ClimaticPage_10 = () => {
@@ -65,7 +65,7 @@ export const ClimaticPage_10 = () => {
                                 label="District"
                                 value={formData.district}
                                 onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                                options={DISTRICTS_10.map((d) => ({ label: d, value: d }))}
+                                options={DISTRICT_OPTIONS_10}
                             />
                             <Input_10
                                 label="Year"
